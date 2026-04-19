@@ -11,11 +11,13 @@ body
     background: #f5f6fa;
 }
 
-.menu-toggle {
+.menu-toggle
+ {
     display: none;
 }
 
-.hamburger {
+.hamburger 
+{
     display: none;
     flex-direction: column;
     cursor: pointer;
@@ -25,7 +27,8 @@ body
     border: none;
 }
 
-.hamburger span {
+.hamburger span 
+{
     width: 25px;
     height: 3px;
     background: #2f3542;
@@ -53,7 +56,8 @@ body
     background: #2f3542;
 }
 
-.overlay {
+.overlay 
+{
     display: none;
     position: fixed;
     top: 0;
@@ -64,7 +68,8 @@ body
     z-index: 999;
 }
 
-#menu-toggle:checked ~ .layout .overlay {
+#menu-toggle:checked ~ .layout .overlay 
+{
     display: block;
 }
 
@@ -224,6 +229,12 @@ body
    
 }
 
+.stat-card:hover 
+{
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+
 .stat-number 
 {
     font-size: 36px;
@@ -293,7 +304,8 @@ body
 }
 
 /* Tablettes et petits écrans */
-@media (max-width: 1024px) {
+@media (max-width: 1024px) 
+{
     .hamburger {
         display: flex !important;
         order: -1;
@@ -373,7 +385,8 @@ body
 }
 
 /* Mobiles */
-@media (max-width: 768px) {
+@media (max-width: 768px) 
+{
     .header-top h1 {
         font-size: 24px;
     }
@@ -398,7 +411,8 @@ body
 }
 
 /* Très petits écrans */
-@media (max-width: 480px) {
+@media (max-width: 480px) 
+{
     .header-top {
         flex-direction: column;
         align-items: flex-start;
@@ -438,7 +452,8 @@ body
     }
 }
 
-@media (max-width: 360px) {
+@media (max-width: 360px) 
+{
     .header-top {
         gap: 8px;
     }

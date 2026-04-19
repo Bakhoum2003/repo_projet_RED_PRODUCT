@@ -110,6 +110,11 @@ body
     background: rgba(255, 255, 255, 1);
 }
 
+.nav-item.active svg, .nav-item.active svg path, .nav-item.active svg rect,.nav-item.active svg circle,.nav-item.active svg g 
+{
+    fill:  rgba(76, 80, 83, 1) !important;
+    stroke:  rgba(76, 80, 83, 1) !important;
+}
 
 .user {
     display: flex;
@@ -264,10 +269,11 @@ color: rgba(0, 0, 0, 1);
   background: #0e3a52;
 }
 /* ========== MODALE ========== */
-.modal {
+.modal 
+{
   display: none;
   position: fixed;
-  z-index: 1000;
+  z-index: 2000;
   left: 0;
   top: 0;
   width: 100%;
@@ -285,6 +291,8 @@ color: rgba(0, 0, 0, 1);
   overflow: hidden;
   max-height: 90vh;
   overflow-y: auto;
+  position: relative;
+  z-index: 2001;
 }
 
 .modal-large {
@@ -322,7 +330,7 @@ color: rgba(0, 0, 0, 1);
   padding: 20px 24px;
 }
 
-/* Styles du formulaire dans la modale */
+
 .modal-body .form {
   padding: 0;
 }
@@ -457,9 +465,13 @@ color: rgba(0, 0, 0, 1);
   }
 }
 
-/* Empêcher le scroll quand la modale est ouverte */
+
 body.modal-open {
   overflow: hidden;
+}
+
+body.modal-open .hamburger {
+  display: none !important;
 }
 
 /* Media Queries pour la responsivité */

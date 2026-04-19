@@ -101,7 +101,8 @@ body > *
 }
 
 
-.card button {
+.card button 
+{
     width: 100%;
     padding: 12px;
     background: #555;
