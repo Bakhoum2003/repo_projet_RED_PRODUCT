@@ -68,22 +68,35 @@ function saveHotel() {
   
   const formData = getFormData();
   console.log('Nouvel hôtel:', formData);
-  
-  // Ajouter une nouvelle carte d'hôtel à la grille
-  addHotelCard(formData);
-  
-  alert(`Hôtel "${formData.nomHotel}" ajouté avec succès !`);
-  
-  // Fermer la modale
-  closeModal();
-  
-  // Réinitialiser le formulaire
-  document.getElementById('nomHotel').value = '';
-  document.getElementById('adresse').value = '';
-  document.getElementById('email').value = '';
-  document.getElementById('telephone').value = '';
-  document.getElementById('prix').value = '';
-  document.getElementById('devise').value = '';
+    // If frontend provided a hook to save on server, use it
+    if (typeof window.saveHotelToServer === 'function') {
+      // saveHotelToServer should handle UI update and alerts
+      window.saveHotelToServer(formData).then(() => {
+        closeModal();
+        // reset form
+        document.getElementById('nomHotel').value = '';
+        document.getElementById('adresse').value = '';
+        document.getElementById('email').value = '';
+        document.getElementById('telephone').value = '';
+        document.getElementById('prix').value = '';
+        document.getElementById('devise').value = '';
+      }).catch((e) => {
+        console.error('Erreur ajout hôtel:', e);
+      });
+      return;
+    }
+
+    // Fallback: Ajouter une nouvelle carte d'hôtel à la grille
+    addHotelCard(formData);
+    alert(`Hôtel "${formData.nomHotel}" ajouté avec succès !`);
+    closeModal();
+    // Réinitialiser le formulaire
+    document.getElementById('nomHotel').value = '';
+    document.getElementById('adresse').value = '';
+    document.getElementById('email').value = '';
+    document.getElementById('telephone').value = '';
+    document.getElementById('prix').value = '';
+    document.getElementById('devise').value = '';
 }
 
 // Ajouter une carte d'hôtel dynamiquement
