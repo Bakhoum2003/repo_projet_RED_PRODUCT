@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Connexion Admin</title>
-<link rel="stylesheet" href="RED PRODUCT/Frontend/CSS/connexion.css">
+<link rel="stylesheet" href="RED%20PRODUCT/Frontend/CSS/connexion.css">
 </head>
 
 <body>
@@ -27,26 +27,29 @@
      <div class="card">
         <h2>Connectez-vous en tant que Admin</h2>
 
-        <input type="email" placeholder="Email">
-        <input type="password" placeholder="Mot de passe">
+        <form id="loginForm" novalidate>
+            <input id="loginEmail" name="email" type="email" placeholder="Email" required>
+            <input id="loginPassword" name="password" type="password" placeholder="Mot de passe" required>
 
-        <div class="checkbox">  
-            <input type="checkbox">
-            <label>Gardez-moi connecté</label>
-        </div>
+            <div class="checkbox">  
+                <input type="checkbox">
+                <label>Gardez-moi connecté</label>
+            </div>
 
-        <button type="button" onclick="window.location.href='RED PRODUCT/Frontend/HTML/dashboard.html'">Se connecter</button>
+            <button id="loginBtn" type="button">Se connecter</button>
+        </form>
     </div>
 
     <div class="right">
-        <div class="forgot"><a href="RED PRODUCT/Frontend/HTML/password.html">Mot de passe oublié?</a></div>
+        <div class="forgot"><a href="RED%20PRODUCT/Frontend/HTML/password.html">Mot de passe oublié?</a></div>
         <br>
         <div class="signup">
-            Vous n'avez pas de compte? <a href="RED PRODUCT/Frontend/HTML/inscription.html">S'inscrire</a>
+            Vous n'avez pas de compte? <a href="RED%20PRODUCT/Frontend/HTML/inscription.html">S'inscrire</a>
         </div>
     </div>
 
 </div>
 
 </body>
+<script src="RED%20PRODUCT/Frontend/JavaScripts/scripts.js" defer></script>
 </html>
