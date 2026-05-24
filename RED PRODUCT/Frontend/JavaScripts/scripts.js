@@ -10,13 +10,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const registerBtn = document.getElementById('registerBtn');
     if (registerBtn) registerBtn.addEventListener('click', handleRegister);
 
+    const forgotBtn = document.getElementById('forgotBtn');
+    if (forgotBtn) forgotBtn.addEventListener('click', handleForgotPassword);
+
     if (document.getElementById('welcome')) loadProfile();
     if (document.querySelector('.grid')) loadHotels();
 });
 
 async function handleLogin() {
-    const email = document.getElementById('loginEmail')?.value;
+    const email = document.getElementById('loginEmail')?.value?.trim();
     const password = document.getElementById('loginPassword')?.value;
+
+    if (!email || !password) {
+        alert('Veuillez saisir votre email et votre mot de passe.');
+        return;
+    }
+
     try {
         const res = await fetch(API_BASE + '/auth/login', {
             method: 'POST',
@@ -33,6 +42,27 @@ async function handleLogin() {
         }
     } catch (err) {
         alert(err?.message || 'Erreur lors de la connexion');
+    }
+}
+
+async function handleForgotPassword() {
+    const email = document.getElementById('forgotEmail')?.value?.trim();
+    if (!email) {
+        alert('Veuillez saisir votre email pour réinitialiser le mot de passe.');
+        return;
+    }
+
+    try {
+        const res = await fetch(API_BASE + '/auth/forgot-password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email })
+        });
+        const data = await res.json();
+        if (!res.ok) throw data;
+        alert(data.message || 'Un email de réinitialisation a été envoyé.');
+    } catch (err) {
+        alert(err?.message || 'Erreur lors de la demande de réinitialisation');
     }
 }
 
