@@ -7,6 +7,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const loginBtn = document.getElementById('loginBtn');
     if (loginBtn) loginBtn.addEventListener('click', handleLogin);
 
+    const loginForm = document.getElementById('loginForm');
+    if (loginForm) loginForm.addEventListener('submit', (e) => { e.preventDefault(); handleLogin(); });
+
     const registerBtn = document.getElementById('registerBtn');
     if (registerBtn) registerBtn.addEventListener('click', handleRegister);
 
