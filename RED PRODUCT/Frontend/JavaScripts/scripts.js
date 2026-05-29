@@ -24,7 +24,42 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (document.getElementById('welcome')) loadProfile();
     if (document.querySelector('.grid')) loadHotels();
+
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) logoutBtn.addEventListener('click', (e) => { e.preventDefault(); handleLogout(); });
 });
+
+async function handleLogout() {
+    const token = localStorage.getItem('token');
+
+    // Appel API backend (fire & forget — on déconnecte quoi qu'il arrive)
+    if (token) {
+        try {
+            await fetch(API_BASE + '/auth/logout', {
+                method: 'POST',
+                headers: { Authorization: 'Bearer ' + token }
+            });
+        } catch (err) {
+            // On ignore l'erreur réseau, la déconnexion locale se fait quand même
+            console.warn('Erreur lors du logout serveur :', err);
+        }
+    }
+
+    // Nettoyage du localStorage
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+
+    // Redirection vers la page de connexion
+    // Calcul du chemin relatif selon la page courante
+    const isAtRoot = window.location.pathname.endsWith('index.html') ||
+                     window.location.pathname === '/' ||
+                     window.location.pathname === '';
+    if (!isAtRoot) {
+        const depth = (window.location.pathname.split('/').length - 2);
+        const back = '../'.repeat(depth);
+        window.location.href = back + 'index.html';
+    }
+}
 
 async function handleLogin() {
     const email = document.getElementById('loginEmail')?.value?.trim();
