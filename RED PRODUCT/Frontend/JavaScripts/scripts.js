@@ -29,7 +29,162 @@ document.addEventListener('DOMContentLoaded', () => {
     if (logoutBtn) logoutBtn.addEventListener('click', (e) => { e.preventDefault(); handleLogout(); });
 });
 
-async function handleLogout() {
+function showLogoutConfirmModal() {
+    // Éviter les doublons
+    if (document.getElementById('logoutConfirmOverlay')) return;
+
+    // Injection des styles de la modale
+    if (!document.getElementById('logoutModalStyles')) {
+        const style = document.createElement('style');
+        style.id = 'logoutModalStyles';
+        style.textContent = `
+            #logoutConfirmOverlay {
+                position: fixed;
+                inset: 0;
+                background: rgba(15, 15, 25, 0.55);
+                backdrop-filter: blur(6px);
+                -webkit-backdrop-filter: blur(6px);
+                z-index: 9999;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                animation: logoutFadeIn 0.2s ease;
+            }
+            @keyframes logoutFadeIn {
+                from { opacity: 0; }
+                to   { opacity: 1; }
+            }
+            #logoutConfirmBox {
+                background: #ffffff;
+                border-radius: 16px;
+                padding: 36px 40px 28px;
+                width: 100%;
+                max-width: 380px;
+                box-shadow: 0 24px 60px rgba(0,0,0,0.18);
+                text-align: center;
+                animation: logoutSlideUp 0.25s cubic-bezier(.34,1.56,.64,1);
+            }
+            @keyframes logoutSlideUp {
+                from { transform: translateY(30px); opacity: 0; }
+                to   { transform: translateY(0);    opacity: 1; }
+            }
+            #logoutConfirmBox .logout-icon {
+                width: 56px;
+                height: 56px;
+                background: #fff0f0;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin: 0 auto 18px;
+            }
+            #logoutConfirmBox h3 {
+                font-size: 1.15rem;
+                font-weight: 700;
+                color: #1a1a2e;
+                margin: 0 0 8px;
+            }
+            #logoutConfirmBox p {
+                font-size: 0.88rem;
+                color: #6b7280;
+                margin: 0 0 28px;
+                line-height: 1.5;
+            }
+            #logoutConfirmBox .logout-actions {
+                display: flex;
+                gap: 12px;
+            }
+            #logoutConfirmBox .btn-cancel-logout {
+                flex: 1;
+                padding: 11px 0;
+                border: 1.5px solid #e5e7eb;
+                background: #f9fafb;
+                border-radius: 10px;
+                font-size: 0.9rem;
+                font-weight: 600;
+                color: #374151;
+                cursor: pointer;
+                transition: background 0.2s, border-color 0.2s;
+            }
+            #logoutConfirmBox .btn-cancel-logout:hover {
+                background: #f3f4f6;
+                border-color: #d1d5db;
+            }
+            #logoutConfirmBox .btn-confirm-logout {
+                flex: 1;
+                padding: 11px 0;
+                border: none;
+                background: linear-gradient(135deg, #ff3b30, #c0392b);
+                border-radius: 10px;
+                font-size: 0.9rem;
+                font-weight: 600;
+                color: #ffffff;
+                cursor: pointer;
+                transition: opacity 0.2s, transform 0.15s;
+            }
+            #logoutConfirmBox .btn-confirm-logout:hover {
+                opacity: 0.9;
+                transform: translateY(-1px);
+            }
+            #logoutConfirmBox .btn-confirm-logout:active {
+                transform: translateY(0);
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    // Injection de la modale dans le DOM
+    const overlay = document.createElement('div');
+    overlay.id = 'logoutConfirmOverlay';
+    overlay.innerHTML = `
+        <div id="logoutConfirmBox">
+            <div class="logout-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ff3b30" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                    <polyline points="16 17 21 12 16 7"/>
+                    <line x1="21" y1="12" x2="9" y2="12"/>
+                </svg>
+            </div>
+            <h3>Déconnexion</h3>
+            <p>Voulez-vous vraiment vous déconnecter de votre session ?</p>
+            <div class="logout-actions">
+                <button class="btn-cancel-logout" id="cancelLogoutBtn">Annuler</button>
+                <button class="btn-confirm-logout" id="confirmLogoutBtn">Se déconnecter</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+
+    // Écouteurs
+    document.getElementById('cancelLogoutBtn').addEventListener('click', () => {
+        overlay.style.animation = 'logoutFadeIn 0.15s ease reverse';
+        setTimeout(() => overlay.remove(), 140);
+    });
+
+    document.getElementById('confirmLogoutBtn').addEventListener('click', () => {
+        overlay.remove();
+        performLogout();
+    });
+
+    // Fermeture au clic sur l'arrière-plan
+    overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) {
+            overlay.style.animation = 'logoutFadeIn 0.15s ease reverse';
+            setTimeout(() => overlay.remove(), 140);
+        }
+    });
+
+    // Fermeture avec Échap
+    const onKeyDown = (e) => {
+        if (e.key === 'Escape') {
+            overlay.remove();
+            document.removeEventListener('keydown', onKeyDown);
+        }
+    };
+    document.addEventListener('keydown', onKeyDown);
+}
+
+async function performLogout() {
     const token = localStorage.getItem('token');
 
     // Appel API backend (fire & forget — on déconnecte quoi qu'il arrive)
@@ -40,7 +195,6 @@ async function handleLogout() {
                 headers: { Authorization: 'Bearer ' + token }
             });
         } catch (err) {
-            // On ignore l'erreur réseau, la déconnexion locale se fait quand même
             console.warn('Erreur lors du logout serveur :', err);
         }
     }
@@ -50,7 +204,6 @@ async function handleLogout() {
     localStorage.removeItem('user');
 
     // Redirection vers la page de connexion
-    // Calcul du chemin relatif selon la page courante
     const isAtRoot = window.location.pathname.endsWith('index.html') ||
                      window.location.pathname === '/' ||
                      window.location.pathname === '';
@@ -60,6 +213,11 @@ async function handleLogout() {
         window.location.href = back + 'index.html';
     }
 }
+
+function handleLogout() {
+    showLogoutConfirmModal();
+}
+
 
 async function handleLogin() {
     const email = document.getElementById('loginEmail')?.value?.trim();
