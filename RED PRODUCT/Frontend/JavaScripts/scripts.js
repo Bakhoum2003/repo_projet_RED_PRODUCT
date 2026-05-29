@@ -178,6 +178,14 @@ async function loadHotels() {
                 card.className = 'card';
                 const imageUrl = (h.images && h.images[0]) || '../Images/default_hotel.png';
                 card.innerHTML = `\
+                    <div class="card-actions">\
+                        <button class="btn-action btn-edit" title="Modifier">\
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>\
+                        </button>\
+                        <button class="btn-action btn-delete" title="Supprimer">\
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>\
+                        </button>\
+                    </div>\
                     <img src="${imageUrl}" alt="${h.name}">\
                     <div class="card-body">\
                         <p class="address">${(h.address && h.address.street) || ''}</p>\
@@ -185,6 +193,19 @@ async function loadHotels() {
                         <p class="price">${h.pricePerNight || ''} ${h.currency || ''} par nuit</p>\
                     </div>`;
                 grid.appendChild(card);
+
+                // Écouteurs d'événements pour la suppression et modification
+                card.querySelector('.btn-delete').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    deleteHotelById(h._id, card);
+                });
+
+                card.querySelector('.btn-edit').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (typeof window.editHotelById === 'function') {
+                        window.editHotelById(h);
+                    }
+                });
             });
 
             const span = document.querySelector('.header-bottom h2 span');
@@ -194,3 +215,84 @@ async function loadHotels() {
         console.warn('Erreur chargement hotels', err);
     }
 }
+
+async function deleteHotelById(id, cardElement) {
+    const token = localStorage.getItem('token');
+    if (!token) {
+        alert('Vous devez être connecté pour supprimer un hôtel');
+        return;
+    }
+    
+    if (!confirm('Êtes-vous sûr de vouloir supprimer cet hôtel ?')) {
+        return;
+    }
+    
+    try {
+        const res = await fetch(API_BASE + `/hotels/${id}`, {
+            method: 'DELETE',
+            headers: {
+                Authorization: 'Bearer ' + token
+            }
+        });
+        const data = await res.json();
+        if (!res.ok) throw data;
+        
+        // Supprimer du DOM
+        cardElement.remove();
+        
+        // Mettre à jour le compteur
+        const span = document.querySelector('.header-bottom h2 span');
+        if (span) {
+            const currentCount = parseInt(span.textContent) || 0;
+            span.textContent = Math.max(0, currentCount - 1);
+        }
+        
+        alert(data.message || 'Hôtel supprimé avec succès');
+    } catch (err) {
+        alert(err?.message || 'Erreur lors de la suppression de l\'hôtel');
+    }
+}
+
+window.updateHotelOnServer = async function(id, hotel) {
+    const token = localStorage.getItem('token');
+    if (!token) {
+        alert('Vous devez être connecté pour modifier un hôtel');
+        return;
+    }
+    try {
+        const body = {
+            name: hotel.nomHotel,
+            email: hotel.email,
+            phone: hotel.telephone,
+            pricePerNight: Number(hotel.prix) || 0,
+            currency: hotel.devise || 'XOF',
+            address: {
+                street: hotel.adresse,
+                city: 'Dakar',
+                country: 'Sénégal'
+            }
+        };
+        // Inclure l'image seulement s'il s'agit d'une nouvelle sélection
+        if (hotel.image) {
+            body.images = [hotel.image];
+        }
+
+        const res = await fetch(API_BASE + `/hotels/${id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: 'Bearer ' + token
+            },
+            body: JSON.stringify(body)
+        });
+        const data = await res.json();
+        if (!res.ok) throw data;
+
+        // Recharger la grille pour refléter les modifications
+        loadHotels();
+        alert(data.message || 'Hôtel modifié avec succès');
+    } catch (err) {
+        alert(err?.message || 'Erreur lors de la modification de l\'hôtel');
+        throw err;
+    }
+};

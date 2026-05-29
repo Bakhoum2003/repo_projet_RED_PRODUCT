@@ -652,4 +652,67 @@ body.modal-open .hamburger {
 .photo-preview-container .delete-preview:hover {
   background: rgba(200, 35, 51, 1);
   transform: scale(1.1);
-}
+}
+
+/* Styles pour les actions d'édition/suppression sur les cartes d'hôtel */
+.card {
+  position: relative;
+}
+
+.card-actions {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  gap: 8px;
+  z-index: 10;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.card:hover .card-actions {
+  opacity: 1;
+}
+
+.btn-action {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  background: rgba(255, 255, 255, 0.95);
+  transition: background-color 0.2s, transform 0.2s, color 0.2s;
+}
+
+.btn-action:hover {
+  transform: scale(1.1);
+}
+
+.btn-action svg {
+  width: 14px;
+  height: 14px;
+  stroke-width: 2.5px;
+}
+
+.btn-edit {
+  color: #007aff;
+}
+
+.btn-edit:hover {
+  background-color: #007aff;
+  color: #ffffff;
+}
+
+.btn-delete {
+  color: #ff3b30;
+}
+
+.btn-delete:hover {
+  background-color: #ff3b30;
+  color: #ffffff;
+}
+

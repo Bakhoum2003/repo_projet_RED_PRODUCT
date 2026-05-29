@@ -6,6 +6,7 @@ const saveBtn = document.getElementById('saveHotelBtn');
 
 // Gestion de la photo
 let selectedImageBase64 = null;
+let currentEditHotelId = null;
 const photoInput = document.getElementById('photo');
 const photoPreviewBox = document.getElementById('photo-preview-box');
 const photoPreview = document.getElementById('photo-preview');
@@ -50,9 +51,28 @@ function resetPhotoUpload() {
 if (!openBtn) console.error('Bouton openFormBtn non trouvé');
 if (!modal) console.error('Modal hotelFormModal non trouvée');
 
+// Réinitialiser les champs et l'aperçu
+function resetFormFields() {
+  currentEditHotelId = null;
+  const title = document.getElementById('modalTitleText');
+  if (title) title.textContent = "CRÉER UN NOUVEL HÔTEL";
+  if (saveBtn) saveBtn.textContent = "Enregistrer";
+  
+  if (document.getElementById('nomHotel')) document.getElementById('nomHotel').value = '';
+  if (document.getElementById('adresse')) document.getElementById('adresse').value = '';
+  if (document.getElementById('email')) document.getElementById('email').value = '';
+  if (document.getElementById('telephone')) document.getElementById('telephone').value = '';
+  if (document.getElementById('prix')) document.getElementById('prix').value = '';
+  if (document.getElementById('devise')) document.getElementById('devise').value = '';
+  resetPhotoUpload();
+}
+
 // Ouvrir la modale
 function openModal() {
   if (modal) {
+    if (currentEditHotelId === null) {
+      resetFormFields();
+    }
     modal.style.display = 'block';
     document.body.classList.add('modal-open');
     document.body.style.overflow = 'hidden';
@@ -65,8 +85,40 @@ function closeModal() {
     modal.style.display = 'none';
     document.body.classList.remove('modal-open');
     document.body.style.overflow = 'auto';
+    resetFormFields();
   }
 }
+
+// Ouvrir la modale en mode modification
+window.editHotelById = function(hotel) {
+  currentEditHotelId = hotel._id;
+  
+  const title = document.getElementById('modalTitleText');
+  if (title) title.textContent = "MODIFIER L'HÔTEL";
+  if (saveBtn) saveBtn.textContent = "Modifier";
+  
+  if (document.getElementById('nomHotel')) document.getElementById('nomHotel').value = hotel.name || '';
+  if (document.getElementById('adresse')) document.getElementById('adresse').value = hotel.address?.street || hotel.adresse || '';
+  if (document.getElementById('email')) document.getElementById('email').value = hotel.email || '';
+  if (document.getElementById('telephone')) document.getElementById('telephone').value = hotel.phone || hotel.telephone || '';
+  if (document.getElementById('prix')) document.getElementById('prix').value = hotel.pricePerNight || hotel.prix || '';
+  if (document.getElementById('devise')) document.getElementById('devise').value = hotel.currency || hotel.devise || 'XOF';
+  
+  const imgUrl = (hotel.images && hotel.images[0]) || hotel.image;
+  if (imgUrl) {
+    selectedImageBase64 = null; // Pas de nouvelle image lue encore, mais affichage de l'aperçu existant
+    if (photoPreview) photoPreview.src = imgUrl;
+    if (photoPreviewBox) photoPreviewBox.style.display = 'block';
+  } else {
+    resetPhotoUpload();
+  }
+  
+  if (modal) {
+    modal.style.display = 'block';
+    document.body.classList.add('modal-open');
+    document.body.style.overflow = 'hidden';
+  }
+};
 
 // Récupérer les valeurs du formulaire
 function getFormData() {
@@ -105,46 +157,46 @@ function validateForm() {
   return true;
 }
 
-// Sauvegarder l'hôtel
+// Sauvegarder l'hôtel (Création ou Modification)
 function saveHotel() {
   if (!validateForm()) return;
   
   const formData = getFormData();
-  console.log('Nouvel hôtel:', formData);
-    // If frontend provided a hook to save on server, use it
+  
+  if (currentEditHotelId) {
+    if (typeof window.updateHotelOnServer === 'function') {
+      window.updateHotelOnServer(currentEditHotelId, formData).then(() => {
+        closeModal();
+        resetFormFields();
+      }).catch((e) => {
+        console.error('Erreur modification hôtel:', e);
+      });
+      return;
+    }
+  } else {
     if (typeof window.saveHotelToServer === 'function') {
-      // saveHotelToServer should handle UI update and alerts
       window.saveHotelToServer(formData).then(() => {
         closeModal();
-        // reset form
-        document.getElementById('nomHotel').value = '';
-        document.getElementById('adresse').value = '';
-        document.getElementById('email').value = '';
-        document.getElementById('telephone').value = '';
-        document.getElementById('prix').value = '';
-        document.getElementById('devise').value = '';
-        resetPhotoUpload();
+        resetFormFields();
       }).catch((e) => {
         console.error('Erreur ajout hôtel:', e);
       });
       return;
     }
+  }
 
-    // Fallback: Ajouter une nouvelle carte d'hôtel à la grille
+  // Fallback local
+  if (currentEditHotelId) {
+    alert("Mode modification en local non supporté.");
+  } else {
     addHotelCard(formData);
     alert(`Hôtel "${formData.nomHotel}" ajouté avec succès !`);
-    closeModal();
-    // Réinitialiser le formulaire
-    document.getElementById('nomHotel').value = '';
-    document.getElementById('adresse').value = '';
-    document.getElementById('email').value = '';
-    document.getElementById('telephone').value = '';
-    document.getElementById('prix').value = '';
-    document.getElementById('devise').value = '';
-    resetPhotoUpload();
+  }
+  closeModal();
+  resetFormFields();
 }
 
-// Ajouter une carte d'hôtel dynamiquement
+// Ajouter une carte d'hôtel dynamiquement (uniquement utilisé en création locale / fallback)
 function addHotelCard(hotel) {
   const grid = document.querySelector('.grid');
   if (!grid) return;
