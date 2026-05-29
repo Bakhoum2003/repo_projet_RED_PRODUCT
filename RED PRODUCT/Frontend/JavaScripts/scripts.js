@@ -1,6 +1,12 @@
 // Frontend integration with backend using Fetch API (no jQuery)
 // Production backend URL deployed on Render
-const API_BASE = window.API_BASE || 'https://red-product-backend-k7mf.onrender.com/api';
+const API_BASE = window.API_BASE || (
+    window.location.hostname === 'localhost' || 
+    window.location.hostname === '127.0.0.1' || 
+    window.location.protocol === 'file:'
+        ? 'http://localhost:5000/api'
+        : 'https://red-product-backend-k7mf.onrender.com/api'
+);
 
 document.addEventListener('DOMContentLoaded', () => {
     // Attach login handler if present
@@ -102,7 +108,13 @@ window.saveHotelToServer = async function(hotel) {
             email: hotel.email,
             phone: hotel.telephone,
             pricePerNight: Number(hotel.prix) || 0,
-            currency: hotel.devise || 'XOF'
+            currency: hotel.devise || 'XOF',
+            address: {
+                street: hotel.adresse,
+                city: 'Dakar',
+                country: 'Sénégal'
+            },
+            images: hotel.image ? [hotel.image] : []
         };
 
         const res = await fetch(API_BASE + '/hotels/create', {
@@ -123,7 +135,8 @@ window.saveHotelToServer = async function(hotel) {
                 email: data.data.email || '',
                 telephone: data.data.phone || '',
                 prix: data.data.pricePerNight || '',
-                devise: data.data.currency || 'XOF'
+                devise: data.data.currency || 'XOF',
+                images: data.data.images || []
             });
             alert(data.message || 'Hôtel ajouté');
         }
@@ -163,8 +176,9 @@ async function loadHotels() {
             data.data.forEach(h => {
                 const card = document.createElement('div');
                 card.className = 'card';
+                const imageUrl = (h.images && h.images[0]) || '../Images/default_hotel.png';
                 card.innerHTML = `\
-                    <img src="../Images/default_hotel.png" alt="${h.name}">\
+                    <img src="${imageUrl}" alt="${h.name}">\
                     <div class="card-body">\
                         <p class="address">${(h.address && h.address.street) || ''}</p>\
                         <h3>${h.name}</h3>\

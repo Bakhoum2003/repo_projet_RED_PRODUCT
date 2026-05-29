@@ -235,9 +235,13 @@
           <div class="photo-buttons">
             <div class="photo-btn">
               <div class="photo-icon">📷</div>
-              <input type="file" id="photo">
-              <span>Ajouter une photo</span>
+              <input type="file" id="photo" accept="image/*">
+              <span id="upload-text">Ajouter une photo</span>
             </div>
+          </div>
+          <div id="photo-preview-box" class="photo-preview-container">
+            <img id="photo-preview" src="" alt="Aperçu">
+            <button type="button" id="delete-photo-preview" class="delete-preview">&times;</button>
           </div>
         </div>
 

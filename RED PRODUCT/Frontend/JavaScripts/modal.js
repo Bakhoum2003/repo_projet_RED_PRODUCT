@@ -4,6 +4,48 @@ const modal = document.getElementById('hotelFormModal');
 const closeBtn = document.querySelector('.close-modal');
 const saveBtn = document.getElementById('saveHotelBtn');
 
+// Gestion de la photo
+let selectedImageBase64 = null;
+const photoInput = document.getElementById('photo');
+const photoPreviewBox = document.getElementById('photo-preview-box');
+const photoPreview = document.getElementById('photo-preview');
+const deletePhotoPreview = document.getElementById('delete-photo-preview');
+
+if (photoInput) {
+  photoInput.addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+      if (!file.type.startsWith('image/')) {
+        alert('Veuillez sélectionner un fichier image valide.');
+        photoInput.value = '';
+        return;
+      }
+      
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        selectedImageBase64 = event.target.result;
+        if (photoPreview) photoPreview.src = selectedImageBase64;
+        if (photoPreviewBox) photoPreviewBox.style.display = 'block';
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+}
+
+if (deletePhotoPreview) {
+  deletePhotoPreview.addEventListener('click', function() {
+    resetPhotoUpload();
+  });
+}
+
+function resetPhotoUpload() {
+  selectedImageBase64 = null;
+  if (photoInput) photoInput.value = '';
+  if (photoPreview) photoPreview.src = '';
+  if (photoPreviewBox) photoPreviewBox.style.display = 'none';
+}
+
+
 // Vérifier si les éléments existent
 if (!openBtn) console.error('Bouton openFormBtn non trouvé');
 if (!modal) console.error('Modal hotelFormModal non trouvée');
@@ -34,7 +76,8 @@ function getFormData() {
     email: document.getElementById('email')?.value || '',
     telephone: document.getElementById('telephone')?.value || '',
     prix: document.getElementById('prix')?.value || '',
-    devise: document.getElementById('devise')?.value || ''
+    devise: document.getElementById('devise')?.value || '',
+    image: selectedImageBase64
   };
 }
 
@@ -80,6 +123,7 @@ function saveHotel() {
         document.getElementById('telephone').value = '';
         document.getElementById('prix').value = '';
         document.getElementById('devise').value = '';
+        resetPhotoUpload();
       }).catch((e) => {
         console.error('Erreur ajout hôtel:', e);
       });
@@ -97,6 +141,7 @@ function saveHotel() {
     document.getElementById('telephone').value = '';
     document.getElementById('prix').value = '';
     document.getElementById('devise').value = '';
+    resetPhotoUpload();
 }
 
 // Ajouter une carte d'hôtel dynamiquement
@@ -104,10 +149,12 @@ function addHotelCard(hotel) {
   const grid = document.querySelector('.grid');
   if (!grid) return;
   
+  const imageUrl = (hotel.images && hotel.images[0]) || hotel.image || '../Images/default_hotel.png';
+  
   const newCard = document.createElement('div');
   newCard.className = 'card';
   newCard.innerHTML = `
-    <img src="../Images/default_hotel.png" alt="${hotel.nomHotel}">
+    <img src="${imageUrl}" alt="${hotel.nomHotel}">
     <div class="card-body">
       <p class="address">${hotel.adresse}</p>
       <h3>${hotel.nomHotel}</h3>
