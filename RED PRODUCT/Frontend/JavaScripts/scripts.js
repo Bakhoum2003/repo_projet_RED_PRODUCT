@@ -32,6 +32,13 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    const dashboardSearchInput = document.getElementById('dashboardSearchInput');
+    if (dashboardSearchInput) {
+        dashboardSearchInput.addEventListener('input', () => {
+            filterDashboardCards(dashboardSearchInput.value);
+        });
+    }
+
     const logoutBtn = document.getElementById('logoutBtn');
     if (logoutBtn) logoutBtn.addEventListener('click', (e) => { e.preventDefault(); handleLogout(); });
 
@@ -449,6 +456,34 @@ function filterHotelCards(searchTerm = '') {
             message.className = 'no-results';
             message.textContent = 'Aucun hôtel trouvé.';
             grid.appendChild(message);
+        }
+    } else if (existingMessage) {
+        existingMessage.remove();
+    }
+}
+
+function filterDashboardCards(searchTerm = '') {
+    const wrapper = document.querySelector('.stats-grid');
+    if (!wrapper) return;
+
+    const normalizedTerm = searchTerm.trim().toLowerCase();
+    const items = Array.from(wrapper.querySelectorAll('.stat-card'));
+    let visibleCount = 0;
+
+    items.forEach(item => {
+        const text = (item.textContent || '').toLowerCase();
+        const matches = !normalizedTerm || text.includes(normalizedTerm);
+        item.style.display = matches ? '' : 'none';
+        if (matches) visibleCount++;
+    });
+
+    const existingMessage = wrapper.querySelector('.no-results');
+    if (visibleCount === 0 && items.length > 0) {
+        if (!existingMessage) {
+            const message = document.createElement('div');
+            message.className = 'no-results';
+            message.textContent = 'Aucun élément trouvé.';
+            wrapper.appendChild(message);
         }
     } else if (existingMessage) {
         existingMessage.remove();

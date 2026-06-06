@@ -176,6 +176,23 @@ body
     border: 1px solid #ddd;
 }
 
+.header-icons .search-input {
+    min-width: 240px;
+    max-width: 320px;
+}
+
+.no-results {
+    grid-column: 1 / -1;
+    text-align: center;
+    color: #5b636b;
+    padding: 30px 20px;
+    background: #f8fafc;
+    border: 1px solid #e5e7eb;
+    border-radius: 18px;
+    font-size: 0.98rem;
+    margin-top: 10px;
+}
+
 .icon 
 {
     font-size: 18px;
