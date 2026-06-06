@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (logoutBtn) logoutBtn.addEventListener('click', (e) => { e.preventDefault(); handleLogout(); });
 
     // Initialiser le gestionnaire de notifications sur toutes les pages qui ont les icônes
-    if (document.getElementById('bellContainer') && document.getElementById('msgContainer')) {
+    if (document.getElementById('bellContainer')) {
         window.NotificationManager.init();
     }
 });
@@ -516,31 +516,25 @@ const NotificationManager = {
     
     init() {
         this.bellContainer = document.getElementById('bellContainer');
-        this.bellBadge = document.getElementById('bellBadge');
-        this.bellDropdown = document.getElementById('bellDropdown');
-        this.bellList = document.getElementById('bellNotificationList');
-        
-        this.msgContainer = document.getElementById('msgContainer');
-        this.msgBadge = document.getElementById('msgBadge');
-        this.msgDropdown = document.getElementById('msgDropdown');
-        this.msgList = document.getElementById('msgNotificationList');
-        
-        // Actions
-        this.btnMarkAllRead = document.getElementById('markAllRead');
+        this.bellBadge     = document.getElementById('bellBadge');
+        this.bellDropdown  = document.getElementById('bellDropdown');
+        this.bellList      = document.getElementById('bellNotificationList');
+
+        // msgContainer est optionnel (peut être absent)
+        this.msgContainer  = document.getElementById('msgContainer')  || null;
+        this.msgBadge      = document.getElementById('msgBadge')      || null;
+        this.msgDropdown   = document.getElementById('msgDropdown')   || null;
+        this.msgList       = document.getElementById('msgNotificationList') || null;
+
+        // Boutons d'action
+        this.btnMarkAllRead          = document.getElementById('markAllRead');
         this.btnClearAllNotifications = document.getElementById('clearAllNotifications');
-        this.btnClearAllMessages = document.getElementById('clearAllMessages');
-        
-        if (!this.bellContainer || !this.msgContainer) {
-            return;
-        }
-        
-        // Initialize default system messages if not exists
+        this.btnClearAllMessages     = document.getElementById('clearAllMessages');
+
+        if (!this.bellContainer) return; // minimum requis
+
         this.initSystemMessages();
-        
-        // Bind event listeners
         this.bindEvents();
-        
-        // Initial render
         this.render();
     },
     
@@ -724,35 +718,37 @@ const NotificationManager = {
         // Toggle Bell Dropdown
         this.bellContainer.addEventListener('click', (e) => {
             e.stopPropagation();
-            this.msgDropdown.classList.remove('show');
+            if (this.msgDropdown) this.msgDropdown.classList.remove('show');
             this.bellDropdown.classList.toggle('show');
         });
-        
-        // Toggle Message Dropdown
-        this.msgContainer.addEventListener('click', (e) => {
-            e.stopPropagation();
-            this.bellDropdown.classList.remove('show');
-            this.msgDropdown.classList.toggle('show');
-        });
-        
+
+        // Toggle Message Dropdown (seulement si l'icône existe)
+        if (this.msgContainer) {
+            this.msgContainer.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.bellDropdown.classList.remove('show');
+                this.msgDropdown.classList.toggle('show');
+            });
+        }
+
         // Prevent closing when clicking inside dropdown
         this.bellDropdown.addEventListener('click', (e) => e.stopPropagation());
-        this.msgDropdown.addEventListener('click', (e) => e.stopPropagation());
-        
+        if (this.msgDropdown) this.msgDropdown.addEventListener('click', (e) => e.stopPropagation());
+
         // Close dropdowns when clicking outside
         document.addEventListener('click', () => {
             this.bellDropdown.classList.remove('show');
-            this.msgDropdown.classList.remove('show');
+            if (this.msgDropdown) this.msgDropdown.classList.remove('show');
         });
-        
+
         // Close dropdowns with escape key
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
                 this.bellDropdown.classList.remove('show');
-                this.msgDropdown.classList.remove('show');
+                if (this.msgDropdown) this.msgDropdown.classList.remove('show');
             }
         });
-        
+
         // Mark all read
         if (this.btnMarkAllRead) {
             this.btnMarkAllRead.addEventListener('click', () => {
@@ -760,21 +756,21 @@ const NotificationManager = {
                 this.saveNotifications(notifications);
             });
         }
-        
+
         // Clear all CRUD notifications
         if (this.btnClearAllNotifications) {
             this.btnClearAllNotifications.addEventListener('click', () => {
                 this.saveNotifications([]);
             });
         }
-        
+
         // Clear all System messages
         if (this.btnClearAllMessages) {
             this.btnClearAllMessages.addEventListener('click', () => {
                 this.saveSystemMessages([]);
             });
         }
-        
+
         // Cross-tab synchronization
         window.addEventListener('storage', () => {
             this.render();
@@ -847,16 +843,19 @@ const NotificationManager = {
             });
         }
         
+        // --- Section messages système (optionnelle) ---
+        if (!this.msgBadge || !this.msgList) return;
+
         const sysMessages = this.getSystemMessages();
         const unreadSys = sysMessages.filter(m => m.unread).length;
-        
+
         if (unreadSys > 0) {
             this.msgBadge.textContent = unreadSys;
             this.msgBadge.classList.add('show');
         } else {
             this.msgBadge.classList.remove('show');
         }
-        
+
         if (sysMessages.length === 0) {
             this.msgList.innerHTML = '<div class="empty-state">Aucun message</div>';
         } else {
