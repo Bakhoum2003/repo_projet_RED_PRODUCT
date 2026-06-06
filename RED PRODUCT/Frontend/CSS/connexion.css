@@ -6,6 +6,11 @@
     font-family: Arial, Helvetica, sans-serif;
  }
 
+html, body {
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
 body
  {
     height: 100vh;
@@ -67,6 +72,8 @@ body > *
     padding: 30px;
     border-radius: 6px;
     width: 320px;
+    max-width: 100%;
+    box-sizing: border-box;
     box-shadow: 0 5px 15px rgba(0,0,0,0.3);
 }
 
@@ -150,5 +157,36 @@ body > *
     color: #FFD964;
     text-decoration: none;
     font-weight: bold;
+}
+
+@media (max-width: 420px) {
+    body {
+        padding: 16px;
+    }
+
+    .card {
+        width: 100%;
+        padding: 24px;
+    }
+
+    .card h2 {
+        font-size: 16px;
+    }
+
+    .card input[type="email"], .card input[type="password"] {
+        padding: 12px;
+    }
+
+    .card button {
+        padding: 14px;
+    }
+
+    .checkbox {
+        font-size: 13px;
+    }
+
+    .right {
+        font-size: 13px;
+    }
 }
 

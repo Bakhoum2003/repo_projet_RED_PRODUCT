@@ -5,6 +5,11 @@
     font-family: "Segoe UI", sans-serif;
 }
 
+html, body {
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
 body 
 {
     background: #f5f6fa;
