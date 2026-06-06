@@ -25,6 +25,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (document.getElementById('welcome')) loadProfile();
     if (document.querySelector('.grid')) loadHotels();
 
+    const hotelSearchInput = document.getElementById('hotelSearchInput');
+    if (hotelSearchInput) {
+        hotelSearchInput.addEventListener('input', () => {
+            filterHotelCards(hotelSearchInput.value);
+        });
+    }
+
     const logoutBtn = document.getElementById('logoutBtn');
     if (logoutBtn) logoutBtn.addEventListener('click', (e) => { e.preventDefault(); handleLogout(); });
 
@@ -414,6 +421,37 @@ async function loadHotels() {
         }
     } catch (err) {
         console.warn('Erreur chargement hotels', err);
+    }
+}
+
+function filterHotelCards(searchTerm = '') {
+    const grid = document.querySelector('.grid');
+    if (!grid) return;
+
+    const normalizedTerm = searchTerm.trim().toLowerCase();
+    const cards = Array.from(grid.querySelectorAll('.card'));
+    let visibleCount = 0;
+
+    cards.forEach(card => {
+        const title = card.querySelector('h3')?.textContent || '';
+        const address = card.querySelector('.address')?.textContent || '';
+        const price = card.querySelector('.price')?.textContent || '';
+        const combined = `${title} ${address} ${price}`.toLowerCase();
+        const matches = !normalizedTerm || combined.includes(normalizedTerm);
+        card.style.display = matches ? '' : 'none';
+        if (matches) visibleCount++;
+    });
+
+    const existingMessage = grid.querySelector('.no-results');
+    if (visibleCount === 0 && cards.length > 0) {
+        if (!existingMessage) {
+            const message = document.createElement('div');
+            message.className = 'no-results';
+            message.textContent = 'Aucun hôtel trouvé.';
+            grid.appendChild(message);
+        }
+    } else if (existingMessage) {
+        existingMessage.remove();
     }
 }
 
