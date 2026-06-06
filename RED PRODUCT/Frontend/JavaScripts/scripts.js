@@ -1,4 +1,4 @@
-// Frontend integration with backend using Fetch API (no jQuery)
+
 // Production backend URL deployed on Render
 const API_BASE = window.API_BASE || (
     window.location.hostname === 'localhost' || 
@@ -27,6 +27,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const logoutBtn = document.getElementById('logoutBtn');
     if (logoutBtn) logoutBtn.addEventListener('click', (e) => { e.preventDefault(); handleLogout(); });
+
+    // Initialiser le gestionnaire de notifications sur toutes les pages qui ont les icônes
+    if (document.getElementById('bellContainer') && document.getElementById('msgContainer')) {
+        window.NotificationManager.init();
+    }
 });
 
 function showLogoutConfirmModal() {
@@ -322,6 +327,9 @@ window.saveHotelToServer = async function(hotel) {
         if (!res.ok) throw data;
 
         if (data && data.data) {
+            if (window.NotificationManager) {
+                window.NotificationManager.addNotification('create', data.data.name, `L'hôtel "${data.data.name}" a été créé par l'administrateur.`);
+            }
             if (typeof addHotelCard === 'function') addHotelCard({
                 nomHotel: data.data.name,
                 adresse: (data.data.address && data.data.address.street) || '',
@@ -410,6 +418,7 @@ async function loadHotels() {
 }
 
 async function deleteHotelById(id, cardElement) {
+    const hotelName = cardElement.querySelector('h3')?.textContent || 'Hôtel';
     const token = localStorage.getItem('token');
     if (!token) {
         alert('Vous devez être connecté pour supprimer un hôtel');
@@ -432,6 +441,9 @@ async function deleteHotelById(id, cardElement) {
         
         // Supprimer du DOM
         cardElement.remove();
+        if (window.NotificationManager) {
+            window.NotificationManager.addNotification('delete', hotelName, `L'hôtel \"${hotelName}\" a été définitivement supprimé.`);
+        }
         
         // Mettre à jour le compteur
         const span = document.querySelector('.header-bottom h2 span');
@@ -483,9 +495,390 @@ window.updateHotelOnServer = async function(id, hotel) {
 
         // Recharger la grille pour refléter les modifications
         loadHotels();
+        if (window.NotificationManager) {
+            window.NotificationManager.addNotification('update', hotel.nomHotel, `Les détails de l'hôtel \"${hotel.nomHotel}\" ont été modifiés par l'administrateur.`);
+        }
         alert(data.message || 'Hôtel modifié avec succès');
     } catch (err) {
         alert(err?.message || 'Erreur lors de la modification de l\'hôtel');
         throw err;
     }
 };
+
+
+/* ==========================================================================
+   Notification System Manager (localStorage persistence and dropdowns)
+   ========================================================================== */
+
+const NotificationManager = {
+    notificationsKey: 'red_product_notifications',
+    systemMessagesKey: 'red_product_system_messages',
+    
+    init() {
+        this.bellContainer = document.getElementById('bellContainer');
+        this.bellBadge = document.getElementById('bellBadge');
+        this.bellDropdown = document.getElementById('bellDropdown');
+        this.bellList = document.getElementById('bellNotificationList');
+        
+        this.msgContainer = document.getElementById('msgContainer');
+        this.msgBadge = document.getElementById('msgBadge');
+        this.msgDropdown = document.getElementById('msgDropdown');
+        this.msgList = document.getElementById('msgNotificationList');
+        
+        // Actions
+        this.btnMarkAllRead = document.getElementById('markAllRead');
+        this.btnClearAllNotifications = document.getElementById('clearAllNotifications');
+        this.btnClearAllMessages = document.getElementById('clearAllMessages');
+        
+        if (!this.bellContainer || !this.msgContainer) {
+            return;
+        }
+        
+        // Initialize default system messages if not exists
+        this.initSystemMessages();
+        
+        // Bind event listeners
+        this.bindEvents();
+        
+        // Initial render
+        this.render();
+    },
+    
+    initSystemMessages() {
+        let sysMsgs = localStorage.getItem(this.systemMessagesKey);
+        if (!sysMsgs) {
+            const defaultMsgs = [
+                {
+                    id: 'sys-1',
+                    type: 'system',
+                    title: 'Bienvenue',
+                    message: "Bienvenue sur l'application RED PRODUCT! Si vous rencontrez un problème, contactez le support.",
+                    timestamp: new Date(Date.now() - 3600000 * 2).toISOString(), // 2 hours ago
+                    unread: true
+                },
+                {
+                    id: 'sys-2',
+                    type: 'system',
+                    title: 'Maintenance',
+                    message: "Une maintenance système est planifiée ce soir à 23h00 (UTC). Les services restent disponibles.",
+                    timestamp: new Date(Date.now() - 3600000 * 24).toISOString(), // 1 day ago
+                    unread: true
+                }
+            ];
+            localStorage.setItem(this.systemMessagesKey, JSON.stringify(defaultMsgs));
+        }
+    },
+    
+    getNotifications() {
+        const data = localStorage.getItem(this.notificationsKey);
+        return data ? JSON.parse(data) : [];
+    },
+    
+    getSystemMessages() {
+        const data = localStorage.getItem(this.systemMessagesKey);
+        return data ? JSON.parse(data) : [];
+    },
+    
+    saveNotifications(notifications) {
+        localStorage.setItem(this.notificationsKey, JSON.stringify(notifications));
+        this.render();
+        window.dispatchEvent(new Event('storage'));
+    },
+    
+    saveSystemMessages(messages) {
+        localStorage.setItem(this.systemMessagesKey, JSON.stringify(messages));
+        this.render();
+        window.dispatchEvent(new Event('storage'));
+    },
+    
+    addNotification(type, title, message) {
+        const notifications = this.getNotifications();
+        const newNotif = {
+            id: 'notif-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9),
+            type,
+            title,
+            message,
+            timestamp: new Date().toISOString(),
+            unread: true
+        };
+        notifications.unshift(newNotif);
+        if (notifications.length > 50) {
+            notifications.pop();
+        }
+        this.saveNotifications(notifications);
+        // Afficher un toast visuel temporaire
+        this.showToast(type, title, message);
+    },
+
+    showToast(type, title, message) {
+        // Styles du toast injectés une seule fois
+        if (!document.getElementById('notifToastStyles')) {
+            const style = document.createElement('style');
+            style.id = 'notifToastStyles';
+            style.textContent = `
+                #notifToastContainer {
+                    position: fixed;
+                    bottom: 24px;
+                    right: 24px;
+                    z-index: 99999;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 10px;
+                    pointer-events: none;
+                }
+                .notif-toast {
+                    display: flex;
+                    align-items: flex-start;
+                    gap: 12px;
+                    background: rgba(255,255,255,0.95);
+                    backdrop-filter: blur(10px);
+                    border-radius: 12px;
+                    box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+                    padding: 14px 18px;
+                    min-width: 280px;
+                    max-width: 360px;
+                    border-left: 4px solid #ccc;
+                    animation: toastSlideIn 0.35s cubic-bezier(0.34,1.56,0.64,1) forwards;
+                    pointer-events: auto;
+                    cursor: pointer;
+                }
+                .notif-toast.toast-create { border-left-color: #2ed573; }
+                .notif-toast.toast-update { border-left-color: #ffa502; }
+                .notif-toast.toast-delete { border-left-color: #ff4757; }
+                .notif-toast.toast-out {
+                    animation: toastSlideOut 0.3s ease forwards;
+                }
+                .notif-toast-icon {
+                    font-size: 22px;
+                    line-height: 1;
+                    flex-shrink: 0;
+                    margin-top: 1px;
+                }
+                .notif-toast-body { flex: 1; }
+                .notif-toast-title {
+                    font-size: 13px;
+                    font-weight: 700;
+                    color: #1a1a2e;
+                    margin-bottom: 3px;
+                }
+                .notif-toast-msg {
+                    font-size: 11.5px;
+                    color: #555;
+                    line-height: 1.4;
+                }
+                .notif-toast-time {
+                    font-size: 10px;
+                    color: #aaa;
+                    margin-top: 4px;
+                }
+                @keyframes toastSlideIn {
+                    from { transform: translateX(120%); opacity: 0; }
+                    to   { transform: translateX(0);    opacity: 1; }
+                }
+                @keyframes toastSlideOut {
+                    from { transform: translateX(0);    opacity: 1; }
+                    to   { transform: translateX(120%); opacity: 0; }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
+        // Créer ou récupérer le conteneur
+        let container = document.getElementById('notifToastContainer');
+        if (!container) {
+            container = document.createElement('div');
+            container.id = 'notifToastContainer';
+            document.body.appendChild(container);
+        }
+
+        const icons = { create: '✅', update: '✏️', delete: '🗑️' };
+        const labels = { create: 'Hôtel ajouté', update: 'Hôtel modifié', delete: 'Hôtel supprimé' };
+        const now = new Date();
+        const timeStr = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+
+        const toast = document.createElement('div');
+        toast.className = `notif-toast toast-${type}`;
+        toast.innerHTML = `
+            <div class="notif-toast-icon">${icons[type] || '🔔'}</div>
+            <div class="notif-toast-body">
+                <div class="notif-toast-title">${labels[type] || title}</div>
+                <div class="notif-toast-msg">${message}</div>
+                <div class="notif-toast-time">Aujourd'hui à ${timeStr}</div>
+            </div>
+        `;
+        container.appendChild(toast);
+
+        // Fermer au clic
+        toast.addEventListener('click', () => dismissToast(toast));
+
+        // Disparaître automatiquement après 5 secondes
+        setTimeout(() => dismissToast(toast), 5000);
+
+        function dismissToast(el) {
+            el.classList.add('toast-out');
+            setTimeout(() => el.remove(), 300);
+        }
+    },
+    
+    bindEvents() {
+        // Toggle Bell Dropdown
+        this.bellContainer.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.msgDropdown.classList.remove('show');
+            this.bellDropdown.classList.toggle('show');
+        });
+        
+        // Toggle Message Dropdown
+        this.msgContainer.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.bellDropdown.classList.remove('show');
+            this.msgDropdown.classList.toggle('show');
+        });
+        
+        // Prevent closing when clicking inside dropdown
+        this.bellDropdown.addEventListener('click', (e) => e.stopPropagation());
+        this.msgDropdown.addEventListener('click', (e) => e.stopPropagation());
+        
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', () => {
+            this.bellDropdown.classList.remove('show');
+            this.msgDropdown.classList.remove('show');
+        });
+        
+        // Close dropdowns with escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                this.bellDropdown.classList.remove('show');
+                this.msgDropdown.classList.remove('show');
+            }
+        });
+        
+        // Mark all read
+        if (this.btnMarkAllRead) {
+            this.btnMarkAllRead.addEventListener('click', () => {
+                const notifications = this.getNotifications().map(n => ({ ...n, unread: false }));
+                this.saveNotifications(notifications);
+            });
+        }
+        
+        // Clear all CRUD notifications
+        if (this.btnClearAllNotifications) {
+            this.btnClearAllNotifications.addEventListener('click', () => {
+                this.saveNotifications([]);
+            });
+        }
+        
+        // Clear all System messages
+        if (this.btnClearAllMessages) {
+            this.btnClearAllMessages.addEventListener('click', () => {
+                this.saveSystemMessages([]);
+            });
+        }
+        
+        // Cross-tab synchronization
+        window.addEventListener('storage', () => {
+            this.render();
+        });
+    },
+    
+    formatTime(isoString) {
+        const date = new Date(isoString);
+        const now = new Date();
+        const diffMs = now - date;
+        const diffMins = Math.floor(diffMs / 60000);
+        const diffHrs = Math.floor(diffMins / 60);
+
+        // Heure exacte toujours affichée
+        const hrs  = String(date.getHours()).padStart(2, '0');
+        const mins = String(date.getMinutes()).padStart(2, '0');
+        const exactTime = `${hrs}:${mins}`;
+
+        const day   = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const year  = date.getFullYear();
+
+        if (diffMins < 1)  return `À l'instant · ${exactTime}`;
+        if (diffMins < 60) return `Il y a ${diffMins} min · ${exactTime}`;
+        if (diffHrs < 24)  return `Aujourd'hui à ${exactTime}`;
+
+        // Hier
+        const yesterday = new Date(now);
+        yesterday.setDate(yesterday.getDate() - 1);
+        if (date.toDateString() === yesterday.toDateString()) {
+            return `Hier à ${exactTime}`;
+        }
+
+        return `${day}/${month}/${year} à ${exactTime}`;
+    },
+    
+    render() {
+        const notifications = this.getNotifications();
+        const unreadNotifs = notifications.filter(n => n.unread).length;
+        
+        if (unreadNotifs > 0) {
+            this.bellBadge.textContent = unreadNotifs;
+            this.bellBadge.classList.add('show');
+        } else {
+            this.bellBadge.classList.remove('show');
+        }
+        
+        if (notifications.length === 0) {
+            this.bellList.innerHTML = '<div class="empty-state">Aucune notification</div>';
+        } else {
+            const typeLabels  = { create: 'Ajout', update: 'Modif', delete: 'Suppr' };
+            const typeIcons   = { create: '✅', update: '✏️', delete: '🗑️' };
+            this.bellList.innerHTML = notifications.map(n => `
+                <div class="notification-item ${n.unread ? 'unread' : ''}" data-id="${n.id}">
+                    <div class="notification-text">
+                        <span class="action-badge ${n.type}">${typeIcons[n.type] || ''} ${typeLabels[n.type] || n.type}</span>
+                        <strong>${n.title}</strong>
+                    </div>
+                    <div class="notification-text" style="margin-top:2px; color:#555;">${n.message}</div>
+                    <div class="notification-time">🕐 ${this.formatTime(n.timestamp)}</div>
+                </div>
+            `).join('');
+
+            this.bellList.querySelectorAll('.notification-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const id = item.dataset.id;
+                    const notifs = this.getNotifications().map(n => n.id === id ? { ...n, unread: false } : n);
+                    this.saveNotifications(notifs);
+                });
+            });
+        }
+        
+        const sysMessages = this.getSystemMessages();
+        const unreadSys = sysMessages.filter(m => m.unread).length;
+        
+        if (unreadSys > 0) {
+            this.msgBadge.textContent = unreadSys;
+            this.msgBadge.classList.add('show');
+        } else {
+            this.msgBadge.classList.remove('show');
+        }
+        
+        if (sysMessages.length === 0) {
+            this.msgList.innerHTML = '<div class="empty-state">Aucun message</div>';
+        } else {
+            this.msgList.innerHTML = sysMessages.map(m => `
+                <div class="notification-item ${m.unread ? 'unread' : ''}" data-id="${m.id}">
+                    <div class="notification-text">
+                        <strong>📢 ${m.title}</strong>
+                    </div>
+                    <div class="notification-text" style="margin-top:2px; color:#555;">${m.message}</div>
+                    <div class="notification-time">🕐 ${this.formatTime(m.timestamp)}</div>
+                </div>
+            `).join('');
+
+            this.msgList.querySelectorAll('.notification-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const id = item.dataset.id;
+                    const msgs = this.getSystemMessages().map(m => m.id === id ? { ...m, unread: false } : m);
+                    this.saveSystemMessages(msgs);
+                });
+            });
+        }
+    }
+};
+
+window.NotificationManager = NotificationManager;
