@@ -19,7 +19,7 @@ body
     display: none;
 }
 
-.hamburger {
+ .hamburger {
     display: none;
     flex-direction: column;
     cursor: pointer;
@@ -71,6 +71,7 @@ body
 
 .layout {
     display: flex;
+    min-height: 100vh;
 }
 
 
@@ -114,7 +115,6 @@ body
 .active {
     background: rgba(255, 255, 255, 1);
 }
-
 .nav-item.active svg, .nav-item.active svg path, .nav-item.active svg rect,.nav-item.active svg circle,.nav-item.active svg g 
 {
     fill:  rgba(76, 80, 83, 1) !important;
@@ -497,6 +497,88 @@ body.modal-open .hamburger {
 }
 
 /* Media Queries pour la responsivité */
+
+/* Tablettes et petits écrans */
+@media (max-width: 1024px) {
+    .hamburger {
+        display: flex !important;
+        order: -1;
+    }
+
+    .overlay {
+        display: none;
+    }
+
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: -260px;
+        bottom: 0;
+        width: 260px;
+        min-height: 100vh;
+        z-index: 1000;
+        transition: left 0.3s ease;
+        overflow-y: auto;
+    }
+
+    #menu-toggle:checked ~ .layout .sidebar {
+        left: 0;
+    }
+
+    #menu-toggle:checked ~ .layout .overlay {
+        display: block;
+    }
+
+    .main {
+        padding: 20px;
+        width: 100%;
+    }
+
+    .header-top {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .header-top h1 {
+        flex: 1;
+        text-align: center;
+        font-size: 26px;
+        margin: 0;
+    }
+
+    .header-icons {
+        gap: 10px;
+        flex-shrink: 0;
+        order: 1;
+    }
+
+    .header-icons input {
+        width: 180px;
+        max-width: 180px;
+    }
+
+    .grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 15px;
+    }
+
+    .card img {
+        height: 140px;
+    }
+
+    .header-bottom {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .btn-add {
+        width: 100%;
+        text-align: center;
+    }
+}
 
 /* Tablettes */
 @media (max-width: 768px) {
