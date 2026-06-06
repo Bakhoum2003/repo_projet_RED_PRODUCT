@@ -517,8 +517,13 @@ const NotificationManager = {
     init() {
         this.bellContainer = document.getElementById('bellContainer');
         this.bellBadge     = document.getElementById('bellBadge');
-        this.bellDropdown  = document.getElementById('bellDropdown');
-        this.bellList      = document.getElementById('bellNotificationList');
+        
+        // Modal fullscreen
+        this.bellNotificationModal = document.getElementById('bellNotificationModal');
+        this.bellNotificationModalList = document.getElementById('bellNotificationModalList');
+        this.closeBellModalBtn = document.getElementById('closeBellModal');
+        this.markAllReadModalBtn = document.getElementById('markAllReadModal');
+        this.clearAllNotificationsModalBtn = document.getElementById('clearAllNotificationsModal');
 
         // msgContainer est optionnel (peut être absent)
         this.msgContainer  = document.getElementById('msgContainer')  || null;
@@ -526,10 +531,9 @@ const NotificationManager = {
         this.msgDropdown   = document.getElementById('msgDropdown')   || null;
         this.msgList       = document.getElementById('msgNotificationList') || null;
 
-        // Boutons d'action
-        this.btnMarkAllRead          = document.getElementById('markAllRead');
-        this.btnClearAllNotifications = document.getElementById('clearAllNotifications');
-        this.btnClearAllMessages     = document.getElementById('clearAllMessages');
+        // Ancien dropdown (gardé pour compatibilité si nécessaire)
+        this.bellDropdown  = document.getElementById('bellDropdown')  || null;
+        this.bellList      = document.getElementById('bellNotificationList') || null;
 
         if (!this.bellContainer) return; // minimum requis
 
@@ -715,61 +719,51 @@ const NotificationManager = {
     },
     
     bindEvents() {
-        // Toggle Bell Dropdown
+        // Open Notification Modal when clicking bell icon
         this.bellContainer.addEventListener('click', (e) => {
             e.stopPropagation();
-            if (this.msgDropdown) this.msgDropdown.classList.remove('show');
-            this.bellDropdown.classList.toggle('show');
+            this.bellNotificationModal.classList.add('show');
+            document.body.style.overflow = 'hidden';
         });
 
-        // Toggle Message Dropdown (seulement si l'icône existe)
-        if (this.msgContainer) {
-            this.msgContainer.addEventListener('click', (e) => {
-                e.stopPropagation();
-                this.bellDropdown.classList.remove('show');
-                this.msgDropdown.classList.toggle('show');
+        // Close Notification Modal when clicking close button
+        if (this.closeBellModalBtn) {
+            this.closeBellModalBtn.addEventListener('click', () => {
+                this.bellNotificationModal.classList.remove('show');
+                document.body.style.overflow = 'auto';
             });
         }
 
-        // Prevent closing when clicking inside dropdown
-        this.bellDropdown.addEventListener('click', (e) => e.stopPropagation());
-        if (this.msgDropdown) this.msgDropdown.addEventListener('click', (e) => e.stopPropagation());
-
-        // Close dropdowns when clicking outside
-        document.addEventListener('click', () => {
-            this.bellDropdown.classList.remove('show');
-            if (this.msgDropdown) this.msgDropdown.classList.remove('show');
-        });
-
-        // Close dropdowns with escape key
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                this.bellDropdown.classList.remove('show');
-                if (this.msgDropdown) this.msgDropdown.classList.remove('show');
+        // Close Modal when clicking outside of it (on overlay)
+        this.bellNotificationModal.addEventListener('click', (e) => {
+            if (e.target === this.bellNotificationModal) {
+                this.bellNotificationModal.classList.remove('show');
+                document.body.style.overflow = 'auto';
             }
         });
 
-        // Mark all read
-        if (this.btnMarkAllRead) {
-            this.btnMarkAllRead.addEventListener('click', () => {
+        // Mark all as read
+        if (this.markAllReadModalBtn) {
+            this.markAllReadModalBtn.addEventListener('click', () => {
                 const notifications = this.getNotifications().map(n => ({ ...n, unread: false }));
                 this.saveNotifications(notifications);
             });
         }
 
-        // Clear all CRUD notifications
-        if (this.btnClearAllNotifications) {
-            this.btnClearAllNotifications.addEventListener('click', () => {
+        // Clear all notifications
+        if (this.clearAllNotificationsModalBtn) {
+            this.clearAllNotificationsModalBtn.addEventListener('click', () => {
                 this.saveNotifications([]);
             });
         }
 
-        // Clear all System messages
-        if (this.btnClearAllMessages) {
-            this.btnClearAllMessages.addEventListener('click', () => {
-                this.saveSystemMessages([]);
-            });
-        }
+        // Close Modal with Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && this.bellNotificationModal.classList.contains('show')) {
+                this.bellNotificationModal.classList.remove('show');
+                document.body.style.overflow = 'auto';
+            }
+        });
 
         // Cross-tab synchronization
         window.addEventListener('storage', () => {
@@ -811,6 +805,7 @@ const NotificationManager = {
         const notifications = this.getNotifications();
         const unreadNotifs = notifications.filter(n => n.unread).length;
         
+        // Update badge
         if (unreadNotifs > 0) {
             this.bellBadge.textContent = unreadNotifs;
             this.bellBadge.classList.add('show');
@@ -818,12 +813,13 @@ const NotificationManager = {
             this.bellBadge.classList.remove('show');
         }
         
+        // Render notifications in modal
         if (notifications.length === 0) {
-            this.bellList.innerHTML = '<div class="empty-state">Aucune notification</div>';
+            this.bellNotificationModalList.innerHTML = '<div class="empty-state">Aucune notification</div>';
         } else {
             const typeLabels  = { create: 'Ajout', update: 'Modif', delete: 'Suppr' };
             const typeIcons   = { create: '✅', update: '✏️', delete: '🗑️' };
-            this.bellList.innerHTML = notifications.map(n => `
+            this.bellNotificationModalList.innerHTML = notifications.map(n => `
                 <div class="notification-item ${n.unread ? 'unread' : ''}" data-id="${n.id}">
                     <div class="notification-text">
                         <span class="action-badge ${n.type}">${typeIcons[n.type] || ''} ${typeLabels[n.type] || n.type}</span>
@@ -834,7 +830,7 @@ const NotificationManager = {
                 </div>
             `).join('');
 
-            this.bellList.querySelectorAll('.notification-item').forEach(item => {
+            this.bellNotificationModalList.querySelectorAll('.notification-item').forEach(item => {
                 item.addEventListener('click', () => {
                     const id = item.dataset.id;
                     const notifs = this.getNotifications().map(n => n.id === id ? { ...n, unread: false } : n);

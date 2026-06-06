@@ -76,18 +76,6 @@
                             <path d="M11.998 14.529V8.52994C11.998 7.24889 11.6387 6.18655 10.9201 5.34293C10.2014 4.46807 9.23284 4.03063 8.01427 4.03063C6.79571 4.03063 5.82711 4.46807 5.10847 5.34293C4.38983 6.18655 4.03051 7.24889 4.03051 8.52994V14.529H11.998ZM14.0134 13.4979L16.0287 15.5132V16.4975H-0.000122219V15.5132L2.01519 13.4979V8.52994C2.01519 6.96768 2.40576 5.60852 3.18689 4.45244C3.99926 3.29637 5.10847 2.54649 6.5145 2.20279V1.49977C6.5145 1.09358 6.65511 0.749886 6.93631 0.468679C7.21752 0.156227 7.57684 8.04663e-07 8.01427 8.04663e-07C8.45171 8.04663e-07 8.81103 0.156227 9.09223 0.468679C9.37344 0.749886 9.51404 1.09358 9.51404 1.49977V2.20279C10.9201 2.54649 12.0137 3.29637 12.7948 4.45244C13.6072 5.60852 14.0134 6.96768 14.0134 8.52994V13.4979ZM9.42031 18.9346C9.01412 19.3095 8.54544 19.497 8.01427 19.497C7.48311 19.497 7.01443 19.3095 6.60824 18.9346C6.20205 18.5284 5.99896 18.0597 5.99896 17.5286H10.0296C10.0296 18.0597 9.8265 18.5284 9.42031 18.9346Z" fill="black" fill-opacity="0.87"/>
                         </svg>
                         <span class="notification-badge" id="bellBadge">0</span>
-                        <div class="notification-dropdown" id="bellDropdown">
-                            <div class="dropdown-header">
-                                <h3>Notifications</h3>
-                                <div class="dropdown-actions">
-                                    <button class="btn-text" id="markAllRead">Marquer comme lus</button>
-                                    <button class="btn-text" id="clearAllNotifications">Tout effacer</button>
-                                </div>
-                            </div>
-                            <div class="dropdown-list" id="bellNotificationList">
-                                <div class="empty-state">Aucune notification</div>
-                            </div>
-                        </div>
                     </div>
                 </div>
 
@@ -264,6 +252,28 @@
 </div>
 
 
+
+</body>
+<!-- Notification Modal Fullscreen -->
+<div class="notification-modal-overlay" id="bellNotificationModal">
+    <div class="notification-modal-content">
+        <div class="notification-modal-header">
+            <h2>Notifications</h2>
+            <button class="btn-close-modal" id="closeBellModal">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+        </div>
+        <div class="notification-modal-actions">
+            <button class="btn-action" id="markAllReadModal">Marquer tous comme lus</button>
+            <button class="btn-action btn-action-danger" id="clearAllNotificationsModal">Tout effacer</button>
+        </div>
+        <div class="notification-modal-list" id="bellNotificationModalList">
+            <div class="empty-state">Aucune notification</div>
+        </div>
+    </div>
+</div>
 
 <script src="../JavaScripts/modal.js"></script>
 <script src="../JavaScripts/scripts.js"></script>
