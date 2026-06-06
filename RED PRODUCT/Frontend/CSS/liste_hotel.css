@@ -1050,28 +1050,31 @@ body.modal-open .hamburger {
 
 .notification-modal-actions {
     display: flex;
-    gap: 10px;
-    padding: 16px 24px;
+    gap: 18px; /* espacement plus large comme le dashboard */
+    padding: 18px 24px;
     border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-    flex-wrap: wrap;
+    flex-wrap: nowrap; /* garder les boutons sur la même ligne */
     flex-shrink: 0;
 }
 
-.btn-action {
-    padding: 8px 16px;
+.notification-modal-actions .btn-action {
+    flex: 1; /* s'étendent pour remplir l'espace disponible */
+    min-width: 160px; /* assurer une largeur minimale confortable */
+    padding: 10px 20px; /* légèrement plus grosses */
     border: 1px solid #ddd;
     background: white;
-    border-radius: 8px;
-    font-size: 12px;
-    font-weight: 600;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 700;
     color: #1a4d6b;
     cursor: pointer;
-    transition: background-color 0.2s, border-color 0.2s;
+    transition: background-color 0.18s, border-color 0.18s, transform 0.12s;
 }
 
-.btn-action:hover {
+.notification-modal-actions .btn-action:hover {
     background-color: #f5f5f5;
     border-color: #1a4d6b;
+    transform: translateY(-1px);
 }
 
 .btn-action-danger {
