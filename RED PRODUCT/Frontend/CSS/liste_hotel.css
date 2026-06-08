@@ -143,6 +143,7 @@ body
 .main {
     flex: 1;
     padding: 25px;
+    min-width: 0; /* allow flex child to shrink and avoid overflow */
 }
 
 
@@ -244,6 +245,8 @@ color: rgba(0, 0, 0, 1);
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: 20px;
+    grid-auto-rows: auto; /* ensure rows size to content */
+    align-items: start; /* prevent overlap when items have variable heights */
 }
 
 
@@ -253,7 +256,6 @@ color: rgba(0, 0, 0, 1);
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    min-height: 100%;
 }
 
 .card img {
@@ -267,6 +269,7 @@ color: rgba(0, 0, 0, 1);
     display: flex;
     flex-direction: column;
     gap: 6px;
+    flex: 1 1 auto; /* let body grow and push footer/actions down consistently */
 }
 
 .address {
