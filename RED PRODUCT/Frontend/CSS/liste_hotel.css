@@ -453,7 +453,8 @@ color: rgba(0, 0, 0, 1);
   text-align: right;
 }
 
-.btn-save {
+.btn-save 
+{
   background: #1a4d6b;
   color: white;
   border: none;
