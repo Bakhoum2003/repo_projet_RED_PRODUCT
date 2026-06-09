@@ -77,14 +77,24 @@ body
 
 .sidebar 
 {
-    width: min(260px, 100%);
-    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 260px;
     background: #2f3542;
     color: white;
     padding: 25px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+}
+
+.main {
+    flex: 1;
+    padding: 25px;
+    min-width: 0; /* allow flex child to shrink and avoid overflow */
+    margin-left: 260px;
 }
 
 
@@ -137,13 +147,6 @@ body
 .online {
     color: #2ed573;
     font-size: 12px;
-}
-
-
-.main {
-    flex: 1;
-    padding: 25px;
-    min-width: 0; /* allow flex child to shrink and avoid overflow */
 }
 
 
@@ -547,6 +550,7 @@ body.modal-open .hamburger {
     .main {
         padding: 20px;
         width: 100%;
+        margin-left: 0;
     }
 
     .header-top {
