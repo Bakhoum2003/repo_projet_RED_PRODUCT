@@ -136,13 +136,23 @@ function getFormData() {
 // Valider le formulaire
 function validateForm() {
   const data = getFormData();
-  
+  const telephonePattern = /^\d{9}$/;
+  const prixPattern = /^\d{5}$/;
+
   if (!data.nomHotel.trim()) {
     alert('Veuillez saisir le nom de l\'hôtel');
     return false;
   }
+  if (data.nomHotel.trim().length > 35) {
+    alert('Le nom de l\'hôtel ne doit pas dépasser 35 caractères');
+    return false;
+  }
   if (!data.adresse.trim()) {
     alert('Veuillez saisir l\'adresse');
+    return false;
+  }
+  if (data.adresse.trim().length > 35) {
+    alert('L\'adresse ne doit pas dépasser 35 caractères');
     return false;
   }
   if (!data.email.trim()) {
@@ -151,6 +161,22 @@ function validateForm() {
   }
   if (!data.telephone.trim()) {
     alert('Veuillez saisir le téléphone');
+    return false;
+  }
+  if (!telephonePattern.test(data.telephone)) {
+    alert('Le téléphone doit contenir exactement 9 chiffres');
+    return false;
+  }
+  if (!data.prix.trim()) {
+    alert('Veuillez saisir le prix par nuit');
+    return false;
+  }
+  if (!prixPattern.test(data.prix)) {
+    alert('Le prix par nuit doit contenir exactement 5 chiffres');
+    return false;
+  }
+  if (!data.devise.trim()) {
+    alert('Veuillez choisir une devise');
     return false;
   }
   

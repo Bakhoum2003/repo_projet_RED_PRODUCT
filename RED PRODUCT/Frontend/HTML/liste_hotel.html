@@ -128,7 +128,7 @@
             <div class="card">
                 <img src="../Images/radisson.png">
                 <div class="card-body">
-                    <p class="address">Rue de la Corniche O Dakar</p>
+                    <p class="address">Rue de la Corniche O Dakar </p>
                     <h3>Radisson Blu Hotel</h3>
                     <p class="price">22.000 XOF par nuit</p>
                 </div>
@@ -200,12 +200,12 @@
       <div class="form">
         <div class="field">
           <label>Nom de l'hôtel</label>
-          <input type="text" id="nomHotel" placeholder="CAP Mariane">
+          <input type="text" id="nomHotel" placeholder="CAP Mariane" maxlength="35">
         </div>
 
         <div class="field">
           <label>Adresse</label>
-          <input type="text" id="adresse" placeholder="ex:, île du saloum">
+          <input type="text" id="adresse" placeholder="ex:, île du saloum" maxlength="35">
         </div>
 
         <div class="field">
@@ -215,17 +215,21 @@
 
         <div class="field">
           <label>Téléphone</label>
-          <input type="tel" id="telephone" placeholder="77 777 77 77">
+          <input type="tel" id="telephone" placeholder="778888777" maxlength="9" inputmode="numeric" pattern="[0-9]{9}">
         </div>
 
         <div class="row">
           <div class="field">
             <label>Prix par nuit</label>
-            <input type="text" id="prix" placeholder="25000 XOF">
+            <input type="text" id="prix" placeholder="25000" maxlength="5" inputmode="numeric" pattern="[0-9]{5}">
           </div>
           <div class="field">
             <label>Devise</label>
-            <input type="text" id="devise" placeholder="XOF">
+            <select id="devise">
+              <option value="XOF">XOF</option>
+              <option value="EURO">EURO</option>
+              <option value="Dollar">Dollar</option>
+            </select>
           </div>
         </div>
 
