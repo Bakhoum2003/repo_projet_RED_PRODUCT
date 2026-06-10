@@ -17,7 +17,7 @@ if (photoInput) {
     const file = e.target.files[0];
     if (file) {
       if (!file.type.startsWith('image/')) {
-        alert('Veuillez sélectionner un fichier image valide.');
+        toast('Veuillez sélectionner un fichier image valide.', 'warning');
         photoInput.value = '';
         return;
       }
@@ -46,6 +46,13 @@ function resetPhotoUpload() {
   if (photoPreviewBox) photoPreviewBox.style.display = 'none';
 }
 
+function toast(message, type = 'info') {
+  if (typeof window.showToast === 'function') {
+    window.showToast(message, type);
+  } else {
+    alert(message);
+  }
+}
 
 // Vérifier si les éléments existent
 if (!openBtn) console.error('Bouton openFormBtn non trouvé');
@@ -140,43 +147,43 @@ function validateForm() {
   const prixPattern = /^\d{5}$/;
 
   if (!data.nomHotel.trim()) {
-    alert('Veuillez saisir le nom de l\'hôtel');
+    toast('Veuillez saisir le nom de l\'hôtel', 'warning');
     return false;
   }
   if (data.nomHotel.trim().length > 35) {
-    alert('Le nom de l\'hôtel ne doit pas dépasser 35 caractères');
+    toast('Le nom de l\'hôtel ne doit pas dépasser 35 caractères', 'warning');
     return false;
   }
   if (!data.adresse.trim()) {
-    alert('Veuillez saisir l\'adresse');
+    toast('Veuillez saisir l\'adresse', 'warning');
     return false;
   }
   if (data.adresse.trim().length > 35) {
-    alert('L\'adresse ne doit pas dépasser 35 caractères');
+    toast('L\'adresse ne doit pas dépasser 35 caractères', 'warning');
     return false;
   }
   if (!data.email.trim()) {
-    alert('Veuillez saisir l\'email');
+    toast('Veuillez saisir l\'email', 'warning');
     return false;
   }
   if (!data.telephone.trim()) {
-    alert('Veuillez saisir le téléphone');
+    toast('Veuillez saisir le téléphone', 'warning');
     return false;
   }
   if (!telephonePattern.test(data.telephone)) {
-    alert('Le téléphone doit contenir exactement 9 chiffres');
+    toast('Le téléphone doit contenir exactement 9 chiffres', 'warning');
     return false;
   }
   if (!data.prix.trim()) {
-    alert('Veuillez saisir le prix par nuit');
+    toast('Veuillez saisir le prix par nuit', 'warning');
     return false;
   }
   if (!prixPattern.test(data.prix)) {
-    alert('Le prix par nuit doit contenir exactement 5 chiffres');
+    toast('Le prix par nuit doit contenir exactement 5 chiffres', 'warning');
     return false;
   }
   if (!data.devise.trim()) {
-    alert('Veuillez choisir une devise');
+    toast('Veuillez choisir une devise', 'warning');
     return false;
   }
   
@@ -213,10 +220,10 @@ function saveHotel() {
 
   // Fallback local
   if (currentEditHotelId) {
-    alert("Mode modification en local non supporté.");
+    toast("Mode modification en local non supporté.", 'error');
   } else {
     addHotelCard(formData);
-    alert(`Hôtel "${formData.nomHotel}" ajouté avec succès !`);
+    toast(`Hôtel "${formData.nomHotel}" ajouté avec succès !`, 'success');
   }
   closeModal();
   resetFormFields();

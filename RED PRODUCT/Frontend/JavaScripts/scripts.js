@@ -8,6 +8,93 @@ const API_BASE = window.API_BASE || (
         : 'https://red-product-backend-k7mf.onrender.com/api'
 );
 
+function initToastContainer() {
+    if (document.getElementById('globalToastContainer')) return;
+    const container = document.createElement('div');
+    container.id = 'globalToastContainer';
+    container.className = 'toast-container';
+    document.body.appendChild(container);
+
+    const style = document.createElement('style');
+    style.id = 'globalToastStyles';
+    style.textContent = `
+        #globalToastContainer {
+            position: fixed;
+            right: 20px;
+            bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 99999;
+            max-width: 360px;
+        }
+        .toast {
+            display: inline-flex;
+            align-items: center;
+            justify-content: space-between;
+            min-width: 250px;
+            max-width: 100%;
+            padding: 14px 16px;
+            border-radius: 14px;
+            color: #fff;
+            background: rgba(37, 99, 235, 0.95);
+            box-shadow: 0 18px 50px rgba(15, 23, 42, 0.2);
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.22s ease, transform 0.22s ease;
+            font-size: 0.95rem;
+            line-height: 1.3;
+            word-break: break-word;
+        }
+        .toast.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .toast.toast-success { background: linear-gradient(135deg, #16a34a, #22c55e); }
+        .toast.toast-error   { background: linear-gradient(135deg, #dc2626, #f43f5e); }
+        .toast.toast-warning { background: linear-gradient(135deg, #d97706, #f59e0b); }
+        .toast.toast-info    { background: linear-gradient(135deg, #2563eb, #3b82f6); }
+        .toast-close {
+            background: transparent;
+            border: none;
+            color: rgba(255,255,255,0.85);
+            font-size: 1.1rem;
+            cursor: pointer;
+            margin-left: 12px;
+            padding: 0;
+            line-height: 1;
+        }
+        .toast-close:hover { color: #ffffff; }
+    `;
+    document.head.appendChild(style);
+}
+
+window.showToast = function(message, type = 'info') {
+    initToastContainer();
+    const container = document.getElementById('globalToastContainer');
+    if (!container) {
+        console.warn('Toast container non trouvé');
+        return;
+    }
+
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.textContent = message;
+
+    const closeBtn = document.createElement('button');
+    closeBtn.type = 'button';
+    closeBtn.className = 'toast-close';
+    closeBtn.innerHTML = '&times;';
+    closeBtn.addEventListener('click', () => toast.remove());
+    toast.appendChild(closeBtn);
+
+    container.appendChild(toast);
+
+    requestAnimationFrame(() => toast.classList.add('visible'));
+    setTimeout(() => toast.classList.remove('visible'), 4200);
+    setTimeout(() => toast.remove(), 4500);
+};
+
 document.addEventListener('DOMContentLoaded', () => {
     // Attach login handler if present
     const loginBtn = document.getElementById('loginBtn');
@@ -243,7 +330,7 @@ async function handleLogin() {
     const password = document.getElementById('loginPassword')?.value;
 
     if (!email || !password) {
-        alert('Veuillez saisir votre email et votre mot de passe.');
+        showToast('Veuillez saisir votre email et votre mot de passe.', 'warning');
         return;
     }
 
@@ -262,14 +349,14 @@ async function handleLogin() {
             window.location.href = encodeURI('RED PRODUCT/Frontend/HTML/dashboard.html');
         }
     } catch (err) {
-        alert(err?.message || 'Erreur lors de la connexion');
+        showToast(err?.message || 'Erreur lors de la connexion', 'error');
     }
 }
 
 async function handleForgotPassword() {
     const email = document.getElementById('forgotEmail')?.value?.trim();
     if (!email) {
-        alert('Veuillez saisir votre email pour réinitialiser le mot de passe.');
+        showToast('Veuillez saisir votre email pour réinitialiser le mot de passe.', 'warning');
         return;
     }
 
@@ -281,9 +368,9 @@ async function handleForgotPassword() {
         });
         const data = await res.json();
         if (!res.ok) throw data;
-        alert(data.message || 'Un email de réinitialisation a été envoyé.');
+        showToast(data.message || 'Un email de réinitialisation a été envoyé.', 'success');
     } catch (err) {
-        alert(err?.message || 'Erreur lors de la demande de réinitialisation');
+        showToast(err?.message || 'Erreur lors de la demande de réinitialisation', 'error');
     }
 }
 
@@ -299,11 +386,11 @@ async function handleRegister() {
         });
         const data = await res.json();
         if (!res.ok) throw data;
-        alert(data.message || 'Inscription réussie');
+        showToast(data.message || 'Inscription réussie', 'success');
         // redirect to root index
         window.location.href = encodeURI('/index.html');
     } catch (err) {
-        alert(err?.message || 'Erreur lors de l\'inscription');
+        showToast(err?.message || 'Erreur lors de l\'inscription', 'error');
     }
 }
 
@@ -311,7 +398,7 @@ async function handleRegister() {
 window.saveHotelToServer = async function(hotel) {
     const token = localStorage.getItem('token');
     if (!token) {
-        alert('Vous devez être connecté pour ajouter un hôtel');
+        showToast('Vous devez être connecté pour ajouter un hôtel', 'warning');
         return;
     }
     try {
@@ -353,10 +440,10 @@ window.saveHotelToServer = async function(hotel) {
                 devise: data.data.currency || 'XOF',
                 images: data.data.images || []
             });
-            alert(data.message || 'Hôtel ajouté');
+            showToast(data.message || 'Hôtel ajouté', 'success');
         }
     } catch (err) {
-        alert(err?.message || 'Erreur lors de l\'ajout d\'hôtel');
+        showToast(err?.message || 'Erreur lors de l\'ajout d\'hôtel', 'error');
         throw err;
     }
 };
@@ -494,7 +581,7 @@ async function deleteHotelById(id, cardElement) {
     const hotelName = cardElement.querySelector('h3')?.textContent || 'Hôtel';
     const token = localStorage.getItem('token');
     if (!token) {
-        alert('Vous devez être connecté pour supprimer un hôtel');
+        showToast('Vous devez être connecté pour supprimer un hôtel', 'warning');
         return;
     }
     
@@ -525,16 +612,16 @@ async function deleteHotelById(id, cardElement) {
             span.textContent = Math.max(0, currentCount - 1);
         }
         
-        alert(data.message || 'Hôtel supprimé avec succès');
+        showToast(data.message || 'Hôtel supprimé avec succès', 'success');
     } catch (err) {
-        alert(err?.message || 'Erreur lors de la suppression de l\'hôtel');
+        showToast(err?.message || 'Erreur lors de la suppression de l\'hôtel', 'error');
     }
 }
 
 window.updateHotelOnServer = async function(id, hotel) {
     const token = localStorage.getItem('token');
     if (!token) {
-        alert('Vous devez être connecté pour modifier un hôtel');
+        showToast('Vous devez être connecté pour modifier un hôtel', 'warning');
         return;
     }
     try {
@@ -571,9 +658,9 @@ window.updateHotelOnServer = async function(id, hotel) {
         if (window.NotificationManager) {
             window.NotificationManager.addNotification('update', hotel.nomHotel, `Les détails de l'hôtel \"${hotel.nomHotel}\" ont été modifiés par l'administrateur.`);
         }
-        alert(data.message || 'Hôtel modifié avec succès');
+        showToast(data.message || 'Hôtel modifié avec succès', 'success');
     } catch (err) {
-        alert(err?.message || 'Erreur lors de la modification de l\'hôtel');
+        showToast(err?.message || 'Erreur lors de la modification de l\'hôtel', 'error');
         throw err;
     }
 };
