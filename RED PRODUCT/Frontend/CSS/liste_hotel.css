@@ -161,22 +161,17 @@ body
     display: flex;
     align-items: center;
     gap: 15px;
-    flex-wrap: wrap;
-    justify-content: flex-end;
 }
 
 .header-icons input {
     padding: 8px 12px;
     border-radius: 20px;
     border: 1px solid #ddd;
-    width: 100%;
-    max-width: 330px;
-    min-width: 0;
 }
 
 .header-icons .search-input {
-    width: 100%;
-    max-width: 330px;
+    min-width: 240px;
+    max-width: 320px;
 }
 
 .no-results {
@@ -571,13 +566,11 @@ body.modal-open .hamburger {
         gap: 10px;
         flex-shrink: 0;
         order: 1;
-        flex-wrap: wrap;
-        justify-content: flex-end;
     }
 
     .header-icons input {
-        width: 100%;
-        max-width: 220px;
+        width: 180px;
+        max-width: 180px;
     }
 
     .grid {
@@ -629,16 +622,22 @@ body.modal-open .hamburger {
 /* Mobiles */
 @media (max-width: 480px) 
 {
-    .hamburger 
-    {
+    .header-top {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .hamburger {
         display: flex !important;
         order: -1;
+        align-self: flex-start;
     }
 
     .header-top h1
      {
-        flex: 1;
-        text-align: center;
+        text-align: left;
+        width: 100%;
         font-size: 20px;
     }
 
@@ -662,25 +661,18 @@ body.modal-open .hamburger {
         padding: 15px;
     }
 
-    .header-top {
-        flex-direction: row;
-        justify-content: space-between;
-        align-items: center;
-        gap: 10px;
-        flex-wrap: wrap;
-    }
-
     .header-icons {
+        width: 100%;
         gap: 10px;
         flex-shrink: 0;
         order: 1;
+        justify-content: space-between;
         flex-wrap: wrap;
-        justify-content: flex-end;
     }
 
     .header-icons input {
         width: 100%;
-        max-width: 220px;
+        max-width: 100%;
     }
 
     .grid {
@@ -709,7 +701,7 @@ body.modal-open .hamburger {
   {
     .header-icons input {
         width: 100%;
-        max-width: 180px;
+        max-width: 100%;
     }
 
     .header-top {
