@@ -97,6 +97,18 @@ body
     margin-left: 260px;
 }
 
+.sticky-hotel-header {
+    position: fixed;
+    top: 0;
+    left: 260px;
+    right: 0;
+    z-index: 900;
+    background: #f5f6fa;
+    padding: 25px 25px 18px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    box-shadow: 0 8px 18px rgba(245, 246, 250, 0.92);
+}
+
 
 .logo 
 {
@@ -210,7 +222,6 @@ body
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
 }
 .header-bottom h2
 {
@@ -245,6 +256,7 @@ color: rgba(0, 0, 0, 1);
     gap: 20px;
     grid-auto-rows: auto; /* ensure rows size to content */
     align-items: start; /* prevent overlap when items have variable heights */
+    padding-top: 132px;
 }
 
 
@@ -548,6 +560,11 @@ body.modal-open .hamburger {
         margin-left: 0;
     }
 
+    .sticky-hotel-header {
+        left: 0;
+        padding: 20px 20px 16px;
+    }
+
     .header-top {
         flex-direction: row;
         justify-content: space-between;
@@ -576,6 +593,7 @@ body.modal-open .hamburger {
     .grid {
         grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
         gap: 15px;
+        padding-top: 172px;
     }
 
     .card img {
@@ -608,6 +626,7 @@ body.modal-open .hamburger {
     .grid {
         grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
         gap: 15px;
+        padding-top: 172px;
     }
 
     .card img {
@@ -661,6 +680,10 @@ body.modal-open .hamburger {
         padding: 15px;
     }
 
+    .sticky-hotel-header {
+        padding: 15px 15px 14px;
+    }
+
     .header-icons {
         width: 100%;
         gap: 10px;
@@ -678,6 +701,7 @@ body.modal-open .hamburger {
     .grid {
         grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
         gap: 10px;
+        padding-top: 260px;
     }
 
     .card img {
@@ -719,6 +743,7 @@ body.modal-open .hamburger {
     .grid {
         grid-template-columns: 1fr;
         gap: 10px;
+        padding-top: 260px;
     }
 
     .card img {
