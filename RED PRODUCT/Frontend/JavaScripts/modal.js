@@ -275,12 +275,3 @@ document.addEventListener('keydown', (e) => {
     closeModal();
   }
 });
-
-// Ouvrir automatiquement la modale si l'URL est /ajouter-hotel ou contient ?action=ajouter
-document.addEventListener('DOMContentLoaded', () => {
-  const isAjouterHotel = window.location.pathname.endsWith('/ajouter-hotel') || 
-                         window.location.search.includes('action=ajouter');
-  if (isAjouterHotel) {
-    openModal();
-  }
-});
