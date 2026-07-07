@@ -7,7 +7,8 @@
     <script>
         (function() {
             if (!localStorage.getItem('token') && !sessionStorage.getItem('token')) {
-                window.location.replace("../../../index.html");
+                const target = window.location.protocol === 'file:' ? '../../../index.html' : '/login';
+                window.location.replace(target);
             }
         })();
     </script>

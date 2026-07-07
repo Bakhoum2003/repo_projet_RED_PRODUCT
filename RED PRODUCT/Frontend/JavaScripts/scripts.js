@@ -99,6 +99,24 @@ document.addEventListener('DOMContentLoaded', () => {
     // Vérification de l'authentification et validation du token
     checkAuth();
 
+    // Dynamiser les liens de navigation pour supporter à la fois file:// et la production
+    document.querySelectorAll('a').forEach(a => {
+        const href = a.getAttribute('href');
+        if (!href || href === '#') return;
+        
+        if (href.includes('dashboard.html') || href === '/dashboard') {
+            a.setAttribute('href', getRouteURL('dashboard'));
+        } else if (href.includes('liste_hotel.html') || href === '/hotels') {
+            a.setAttribute('href', getRouteURL('hotels'));
+        } else if (href.endsWith('index.html') || href === '/login') {
+            a.setAttribute('href', getRouteURL('login'));
+        } else if (href.includes('inscription.html') || href === '/register') {
+            a.setAttribute('href', getRouteURL('register'));
+        } else if (href.includes('password.html') || href === '/forgot-password') {
+            a.setAttribute('href', getRouteURL('forgot-password'));
+        }
+    });
+
     // Attach login handler if present
     const loginBtn = document.getElementById('loginBtn');
     if (loginBtn) loginBtn.addEventListener('click', handleLogin);
@@ -299,20 +317,55 @@ function showLogoutConfirmModal() {
     document.addEventListener('keydown', onKeyDown);
 }
 
-function redirectToLogin() {
-    const path = window.location.pathname;
-    let target = 'index.html';
-    if (path.includes('/Frontend/HTML/') || path.includes('/Frontend/HTML')) {
-        target = '../../../index.html';
-    } else if (path.includes('Frontend/HTML/') || path.includes('Frontend/HTML')) {
-        target = '../../../index.html';
+const IS_PRODUCTION = window.location.protocol !== 'file:';
+
+function getRouteURL(route) {
+    const isAtRoot = window.location.pathname.endsWith('index.html') ||
+                     window.location.pathname === '/' ||
+                     window.location.pathname === '' ||
+                     window.location.pathname.endsWith('/login');
+
+    if (!IS_PRODUCTION) {
+        // Fallback for file:// protocol
+        const routes = {
+            'login': '../../../index.html',
+            'dashboard': 'dashboard.html',
+            'hotels': 'liste_hotel.html',
+            'ajouter-hotel': 'liste_hotel.html?action=ajouter',
+            'register': 'inscription.html',
+            'forgot-password': 'password.html'
+        };
+        if (isAtRoot) {
+            routes['dashboard'] = 'RED PRODUCT/Frontend/HTML/dashboard.html';
+            routes['hotels'] = 'RED PRODUCT/Frontend/HTML/liste_hotel.html';
+            routes['ajouter-hotel'] = 'RED PRODUCT/Frontend/HTML/liste_hotel.html?action=ajouter';
+            routes['login'] = 'index.html';
+            routes['register'] = 'RED PRODUCT/Frontend/HTML/inscription.html';
+            routes['forgot-password'] = 'RED PRODUCT/Frontend/HTML/password.html';
+        }
+        return routes[route] || route;
     }
-    window.location.replace(target);
+    
+    // Production clean URLs
+    const routes = {
+        'login': '/login',
+        'dashboard': '/dashboard',
+        'hotels': '/hotels',
+        'ajouter-hotel': '/ajouter-hotel',
+        'register': '/register',
+        'forgot-password': '/forgot-password'
+    };
+    return routes[route] || '/' + route;
+}
+
+function redirectToLogin() {
+    window.location.replace(getRouteURL('login'));
 }
 
 async function checkAuth() {
     const path = window.location.pathname;
-    const isProtectedRoute = path.includes('dashboard.html') || path.includes('liste_hotel.html');
+    const isProtectedRoute = path.includes('dashboard.html') || path.includes('liste_hotel.html') ||
+                             path.endsWith('/dashboard') || path.endsWith('/hotels') || path.endsWith('/ajouter-hotel');
     if (!isProtectedRoute) return;
 
     const token = localStorage.getItem('token');
@@ -368,6 +421,7 @@ async function performLogout() {
     redirectToLogin();
 }
 
+
 function handleLogout() {
     showLogoutConfirmModal();
 }
@@ -393,8 +447,7 @@ async function handleLogin() {
         if (data.token) {
             localStorage.setItem('token', data.token);
             localStorage.setItem('user', JSON.stringify(data.user || {}));
-            // encode path to handle spaces in folder names
-            window.location.href = encodeURI('RED PRODUCT/Frontend/HTML/dashboard.html');
+            window.location.replace(getRouteURL('dashboard'));
         }
     } catch (err) {
         showToast(err?.message || 'Erreur lors de la connexion', 'error');
@@ -435,8 +488,7 @@ async function handleRegister() {
         const data = await res.json();
         if (!res.ok) throw data;
         showToast(data.message || 'Inscription réussie', 'success');
-        // redirect to root index
-        window.location.href = encodeURI('/index.html');
+        window.location.replace(getRouteURL('login'));
     } catch (err) {
         showToast(err?.message || 'Erreur lors de l\'inscription', 'error');
     }
