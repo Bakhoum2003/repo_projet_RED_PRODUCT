@@ -317,7 +317,11 @@ function showLogoutConfirmModal() {
     document.addEventListener('keydown', onKeyDown);
 }
 
-const IS_PRODUCTION = window.location.protocol !== 'file:';
+const IS_PRODUCTION = window.location.protocol !== 'file:' &&
+                      !(
+                          (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') &&
+                          window.location.port !== '3000'
+                      );
 
 function getRouteURL(route) {
     const isAtRoot = window.location.pathname.endsWith('index.html') ||

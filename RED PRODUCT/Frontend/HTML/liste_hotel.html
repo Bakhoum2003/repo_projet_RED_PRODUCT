@@ -8,7 +8,9 @@
 <script>
     (function() {
         if (!localStorage.getItem('token') && !sessionStorage.getItem('token')) {
-            const target = window.location.protocol === 'file:' ? '../../../index.html' : '/login';
+            const isLocalDev = window.location.protocol === 'file:' || 
+                               ((window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && window.location.port !== '3000');
+            const target = isLocalDev ? '../../../index.html' : '/login';
             window.location.replace(target);
         }
     })();
