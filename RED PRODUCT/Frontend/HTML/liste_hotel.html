@@ -5,6 +5,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Liste des hôtels</title>
+<script>
+    (function() {
+        if (!localStorage.getItem('token') && !sessionStorage.getItem('token')) {
+            window.location.replace("../../../index.html");
+        }
+    })();
+</script>
 <link rel="stylesheet" href="../CSS/liste_hotel.css">
 </head>
 

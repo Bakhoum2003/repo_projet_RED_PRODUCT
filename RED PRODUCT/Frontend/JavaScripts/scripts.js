@@ -96,6 +96,9 @@ window.showToast = function(message, type = 'info') {
 };
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Vérification de l'authentification et validation du token
+    checkAuth();
+
     // Attach login handler if present
     const loginBtn = document.getElementById('loginBtn');
     if (loginBtn) loginBtn.addEventListener('click', handleLogin);
@@ -109,7 +112,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const forgotBtn = document.getElementById('forgotBtn');
     if (forgotBtn) forgotBtn.addEventListener('click', handleForgotPassword);
 
-    if (document.getElementById('welcome')) loadProfile();
     if (document.querySelector('.grid')) loadHotels();
 
     const hotelSearchInput = document.getElementById('hotelSearchInput');
@@ -132,6 +134,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialiser le gestionnaire de notifications sur toutes les pages qui ont les icônes
     if (document.getElementById('bellContainer')) {
         window.NotificationManager.init();
+    }
+});
+
+// Gérer la navigation retour/suivant (BFCache)
+window.addEventListener('pageshow', (event) => {
+    if (event.persisted) {
+        checkAuth();
     }
 });
 
@@ -290,10 +299,56 @@ function showLogoutConfirmModal() {
     document.addEventListener('keydown', onKeyDown);
 }
 
-async function performLogout() {
-    const token = localStorage.getItem('token');
+function redirectToLogin() {
+    const path = window.location.pathname;
+    let target = 'index.html';
+    if (path.includes('/Frontend/HTML/') || path.includes('/Frontend/HTML')) {
+        target = '../../../index.html';
+    } else if (path.includes('Frontend/HTML/') || path.includes('Frontend/HTML')) {
+        target = '../../../index.html';
+    }
+    window.location.replace(target);
+}
 
-    // Appel API backend (fire & forget — on déconnecte quoi qu'il arrive)
+async function checkAuth() {
+    const path = window.location.pathname;
+    const isProtectedRoute = path.includes('dashboard.html') || path.includes('liste_hotel.html');
+    if (!isProtectedRoute) return;
+
+    const token = localStorage.getItem('token');
+    if (!token) {
+        redirectToLogin();
+        return;
+    }
+
+    try {
+        const res = await fetch(API_BASE + '/users/me', {
+            headers: { Authorization: 'Bearer ' + token }
+        });
+        if (!res.ok) {
+            throw new Error('Session expirée ou invalide');
+        }
+        const data = await res.json();
+        if (data && data.user) {
+            const welcome = document.getElementById('welcome');
+            if (welcome) welcome.textContent = `Bienvenue ${data.user.name}`;
+
+            const sidebarNames = document.querySelectorAll('.sidebar .user p, .user p');
+            sidebarNames.forEach(el => el.textContent = data.user.name);
+        }
+    } catch (err) {
+        console.warn('Authentication check failed:', err);
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        sessionStorage.removeItem('token');
+        sessionStorage.removeItem('user');
+        redirectToLogin();
+    }
+}
+
+async function performLogout() {
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+
     if (token) {
         try {
             await fetch(API_BASE + '/auth/logout', {
@@ -305,19 +360,12 @@ async function performLogout() {
         }
     }
 
-    // Nettoyage du localStorage
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    sessionStorage.removeItem('token');
+    sessionStorage.removeItem('user');
 
-    // Redirection vers la page de connexion
-    const isAtRoot = window.location.pathname.endsWith('index.html') ||
-                     window.location.pathname === '/' ||
-                     window.location.pathname === '';
-    if (!isAtRoot) {
-        const depth = (window.location.pathname.split('/').length - 2);
-        const back = '../'.repeat(depth);
-        window.location.href = back + 'index.html';
-    }
+    redirectToLogin();
 }
 
 function handleLogout() {
@@ -447,24 +495,6 @@ window.saveHotelToServer = async function(hotel) {
         throw err;
     }
 };
-
-async function loadProfile() {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-    try {
-        const res = await fetch(API_BASE + '/users/me', {
-            headers: { Authorization: 'Bearer ' + token }
-        });
-        const data = await res.json();
-        if (!res.ok) throw data;
-        if (data && data.user) {
-            const welcome = document.getElementById('welcome');
-            if (welcome) welcome.textContent = `Bienvenue ${data.user.name}`;
-        }
-    } catch (err) {
-        console.warn('Impossible de charger le profil', err);
-    }
-}
 
 async function loadHotels() {
     try {
