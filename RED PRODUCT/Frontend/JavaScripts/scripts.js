@@ -95,7 +95,57 @@ window.showToast = function(message, type = 'info') {
     setTimeout(() => toast.remove(), 4500);
 };
 
+function showVerificationPage(status, message) {
+    document.body.innerHTML = '';
+    document.body.style.margin = '0';
+    document.body.style.fontFamily = 'Segoe UI, Arial, sans-serif';
+    document.body.style.background = 'linear-gradient(135deg, #f4f4f4 0%, #e9eef3 100%)';
+    document.body.style.minHeight = '100vh';
+    document.body.style.display = 'flex';
+    document.body.style.alignItems = 'center';
+    document.body.style.justifyContent = 'center';
+
+    const success = status === '1';
+    const icon = success ? '✅' : '❌';
+    const title = success ? 'Compte confirmé' : 'Échec de confirmation';
+    const subtitle = message || (success
+        ? 'Votre adresse email a bien été confirmée. Vous pouvez maintenant vous connecter.'
+        : 'La confirmation a échoué. Veuillez réessayer ou demander un nouveau lien.');
+
+    document.body.innerHTML = `
+        <div style="width:min(92vw, 480px);background:#fff;border-radius:18px;box-shadow:0 20px 50px rgba(0,0,0,0.14);padding:40px 32px;text-align:center;">
+            <div style="font-size:56px;margin-bottom:16px;">${icon}</div>
+            <div style="font-size:22px;font-weight:800;color:#1a1a2e;letter-spacing:1px;margin-bottom:12px;">RED PRODUCT</div>
+            <h1 style="font-size:26px;color:${success ? '#16a34a' : '#c0392b'};margin:0 0 12px;">${title}</h1>
+            <p style="margin:0 0 24px;color:#555;line-height:1.7;font-size:15px;">${subtitle}</p>
+            <button id="verificationActionBtn" style="border:none;background:linear-gradient(135deg,#c0392b,#e74c3c);color:#fff;padding:13px 26px;border-radius:10px;font-weight:700;cursor:pointer;">Se connecter</button>
+        </div>
+    `;
+
+    const actionBtn = document.getElementById('verificationActionBtn');
+    if (actionBtn) {
+        actionBtn.addEventListener('click', () => {
+            const cleanUrl = window.location.pathname + window.location.hash;
+            window.location.href = cleanUrl;
+        });
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
+    const params = new URLSearchParams(window.location.search);
+    const verified = params.get('verified');
+    const message = params.get('message');
+
+    if (verified === '1' || verified === '0') {
+        showVerificationPage(verified, message);
+        return;
+    }
+
+    if (window.history.replaceState) {
+        const cleanUrl = window.location.pathname;
+        window.history.replaceState({}, document.title, cleanUrl);
+    }
+
     // Vérification de l'authentification et validation du token
     checkAuth();
 
